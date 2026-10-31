@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>LandSplit – Land Measurement &amp; Division</title>
+<style>
+:root{--g:#1f6f4a;--g2:#e6f2ec;--g3:#c9e3d6;--bd:#d5ddd8;--tx:#1d2a24;--mut:#5d6b64;--warn:#b45309;--err:#b91c1c;--ok:#15803d;--acc:#d9480f}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari",sans-serif;color:var(--tx);background:#f4f7f5;height:100vh;display:flex;flex-direction:column}
+header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 12px;background:#fff;border-bottom:1px solid var(--bd)}
+.logo{font-weight:800;font-size:18px;color:var(--g);letter-spacing:.2px;display:flex;align-items:center;gap:6px}
+#pname{font:inherit;font-weight:600;border:1px solid var(--bd);border-radius:6px;padding:6px 8px;min-width:140px;flex:1;max-width:280px}
+.sp{flex:1}
+button,select,input{font:inherit}
+.btn{border:1px solid var(--bd);background:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;color:var(--tx)}
+.btn:hover{background:var(--g2)}
+.btn.pri{background:var(--g);color:#fff;border-color:var(--g)}
+.btn.pri:hover{background:#185a3b}
+.btn.sm{padding:3px 8px;font-size:12px}
+.btn.dng{color:var(--err)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--warn);margin-left:4px;vertical-align:middle}
+main{flex:1;display:grid;grid-template-columns:68px minmax(0,1fr) 390px;min-height:0}
+#tools{background:#fff;border-right:1px solid var(--bd);display:flex;flex-direction:column;gap:4px;padding:6px;overflow-y:auto}
+.tb{border:1px solid transparent;background:none;border-radius:8px;padding:5px 2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:10px;color:var(--tx);min-width:52px}
+.tb svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tb:hover{background:var(--g2)}
+.tb.on{background:var(--g);color:#fff}
+.tb:disabled{opacity:.35;cursor:default}
+.tsep{height:1px;background:var(--bd);margin:3px 4px;flex:none}
+#stage{position:relative;min-width:0;display:flex;flex-direction:column;min-height:0}
+#cvwrap{position:relative;flex:1;min-height:200px}
+#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;background:#fff;display:block}
+#hint{padding:6px 12px;background:var(--g2);border-top:1px solid var(--g3);font-size:13px;color:#134e32}
+#toast{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:#1d2a24;color:#fff;padding:8px 14px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center;z-index:5}
+#toast.show{opacity:.95}
+#banner{display:none;padding:8px 12px;background:#fff7e6;border-bottom:1px solid #f3d9a4;font-size:13px}
+#banner.show{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#side{overflow-y:auto;background:#fff;border-left:1px solid var(--bd);padding:0 0 12px}
+.sec{border-bottom:1px solid var(--bd);padding:10px 12px}
+.sec h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut)}
+.row{display:flex;gap:6px;align-items:center;margin:5px 0;flex-wrap:wrap}
+.row label{min-width:78px;color:var(--mut);font-size:13px}
+.row input[type=number],.row input[type=text],.row select{border:1px solid var(--bd);border-radius:6px;padding:4px 6px;min-width:0;flex:1}
+.row input[type=number]{max-width:110px}
+.chk{display:flex;gap:6px;align-items:center;font-size:13px;margin:3px 0}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:3px 6px;border-bottom:1px solid #eef2ef;text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--mut);font-weight:600;font-size:11.5px}
+.kv{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:13px}
+.kv b{text-align:right}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600}
+.pill.ok{background:#dcfce7;color:var(--ok)}
+.pill.bad{background:#fee2e2;color:var(--err)}
+.msg{font-size:12.5px;margin:4px 0;padding:5px 8px;border-radius:6px}
+.msg.w{background:#fff4e0;color:var(--warn)}
+.msg.e{background:#fee2e2;color:var(--err)}
+.card{border:1px solid var(--bd);border-radius:8px;margin:8px 0;background:#fff}
+.card.sel{border-color:var(--g);box-shadow:0 0 0 2px var(--g3)}
+.card>summary{list-style:none;cursor:pointer;padding:8px 10px;display:flex;gap:8px;align-items:center}
+.card>summary::-webkit-details-marker{display:none}
+.card .body{padding:2px 10px 10px}
+.sw{width:14px;height:14px;border-radius:3px;flex:none;border:1px solid rgba(0,0,0,.2)}
+.card input.nm{border:1px solid transparent;background:transparent;font-weight:700;padding:2px 4px;border-radius:4px;min-width:0;width:110px}
+.card input.nm:hover,.card input.nm:focus{border-color:var(--bd);background:#fff}
+.card .ar{margin-left:auto;font-weight:600;text-align:right}
+.mut{color:var(--mut);font-size:12.5px}
+#disc{padding:6px 12px;background:#fff7ed;border-top:1px solid #fed7aa;color:#9a3412;font-size:12px;text-align:center}
+dialog{border:1px solid var(--bd);border-radius:12px;max-width:640px;width:92vw;padding:0}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+dialog .dh{padding:12px 16px;border-bottom:1px solid var(--bd);font-weight:700;display:flex;justify-content:space-between;align-items:center}
+dialog .db{padding:12px 16px;max-height:70vh;overflow:auto}
+dialog h4{margin:12px 0 4px}
+dialog li{margin:3px 0}
+kbd{background:#eef2ef;border:1px solid var(--bd);border-radius:4px;padding:0 5px;font-size:12px}
+#report{display:none}
+@media(max-width:900px){
+ body{height:auto;min-height:100vh}
+ main{display:block}
+ #tools{flex-direction:row;overflow-x:auto;overflow-y:hidden;border-right:0;border-bottom:1px solid var(--bd)}
+ .tsep{width:1px;height:auto;margin:4px 3px}
+ #stage{height:64vh}
+ #side{border-left:0}
+ #pname{max-width:none}
+}
+@media print{
+ @page{size:A4;margin:12mm}
+ body{display:block;height:auto;background:#fff}
+ body>*:not(#report){display:none!important}
+ #report{display:block;color:#000;font-size:11pt}
+ #report h1{font-size:18pt;margin:0 0 2px}
+ #report h2{font-size:13pt;margin:14px 0 4px;border-bottom:1px solid #999}
+ #report img{max-width:100%;border:1px solid #bbb}
+ #report table{margin:4px 0 8px}
+ #report .pb{page-break-inside:avoid}
+ #report .dsc{margin-top:14px;padding:6px;border:1px solid #c2410c;font-size:9.5pt}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1f6f4a" stroke-width="2" stroke-linejoin="round"><path d="M3 18L6 5l13-2 2 11-9 6z"/><path d="M6 5l9 11" stroke-dasharray="2 2"/></svg>LandSplit</div>
+  <input id="pname" type="text" value="Untitled plot" aria-label="Project name">
+  <span id="dirty" class="dot" title="Unsaved changes" style="display:none"></span>
+  <div class="sp"></div>
+  <button class="btn" id="bNew">New</button>
+  <button class="btn" id="bOpen">Open…</button>
+  <button class="btn pri" id="bSave">Save</button>
+  <button class="btn" id="bSaveAs">Save As…</button>
+  <button class="btn" id="bCsv">Export CSV</button>
+  <button class="btn" id="bPrint">Print / PDF</button>
+  <button class="btn" id="bHelp">Help</button>
+  <input type="file" id="fileIn" accept=".json,application/json" style="display:none">
+</header>
+<div id="banner"><span id="bannerTxt"></span><button class="btn sm" id="bRestore">Restore it</button><button class="btn sm" id="bDiscard">Discard</button></div>
+<main>
+  <nav id="tools" aria-label="Tools"></nav>
+  <section id="stage">
+    <div id="cvwrap"><canvas id="cv"></canvas><div id="toast"></div></div>
+    <div id="hint"></div>
+  </section>
+  <aside id="side">
+    <div class="sec">
+      <h3>Units &amp; scale</h3>
+      <div class="row"><label>Lengths</label><select id="uLen"></select><label style="min-width:0">Decimals</label><select id="uDec"><option>0</option><option>1</option><option selected>2</option><option>3</option><option>4</option></select></div>
+      <div class="row"><label>Areas</label><select id="uArea"></select></div>
+      <div class="row"><label>Scale</label><span class="mut">1 grid square =</span><input type="number" id="scVal" min="0.000001" step="any" value="1"><select id="scUnit"></select></div>
+      <div class="row"><button class="btn sm" id="bBihar">Bigha / Katha / Dhur values…</button></div>
+      <div class="chk"><input type="checkbox" id="oSnap" checked><label for="oSnap">Snap to grid</label></div>
+      <div class="chk"><input type="checkbox" id="oGrid" checked><label for="oGrid">Show grid</label></div>
+      <div class="chk"><input type="checkbox" id="oLen" checked><label for="oLen">Show line lengths</label></div>
+      <div class="chk"><input type="checkbox" id="oLab" checked><label for="oLab">Show parcel names &amp; areas</label></div>
+      <div class="chk"><input type="checkbox" id="oPar" checked><label for="oPar">Show parallel-line markers (∥)</label></div>
+      <div class="chk"><input type="checkbox" id="oParD"><label for="oParD">…with the distance between them</label></div>
+      <div class="chk"><input type="checkbox" id="oCN" checked><label for="oCN">Show corner names (A, B, C…)</label></div>
+      <div class="chk"><input type="checkbox" id="oSN" checked><label for="oSN">Show side names (AB, BC…)</label></div>
+      <div class="row"><label>Naming</label><select id="oNS"><option value="letters">Letters (A, B, C…)</option><option value="numbers">Numbers (1, 2, 3…)</option></select></div>
+      <div class="chk"><input type="checkbox" id="oExt" checked><label for="oExt">Auto-extend dividing lines to the boundary</label></div>
+      <div class="row"><label>Angles</label><select id="oAng"><option value="interior">Interior</option><option value="exterior">Exterior</option><option value="both">Both</option><option value="none">Hidden</option></select></div>
+    </div>
+    <div class="sec">
+      <h3>Quick rectangle / parallelogram by size</h3>
+      <div class="row"><input type="number" id="qW" min="0" step="any" placeholder="Width"><span>×</span><input type="number" id="qH" min="0" step="any" placeholder="Length"><button class="btn sm" id="bQuick">Create</button></div>
+      <div class="row"><input type="number" id="qpB" min="0" step="any" placeholder="Base" style="max-width:72px"><span>×</span><input type="number" id="qpS" min="0" step="any" placeholder="Side" style="max-width:72px"><span>∠</span><input type="number" id="qpA" min="0.01" max="179.99" step="any" placeholder="Angle°" style="max-width:76px"><button class="btn sm" id="bQuickP">Create</button></div>
+      <div class="mut">Parallelogram: base, slanted side and the angle between them. Sizes use the selected length unit.</div>
+    </div>
+    <div class="sec">
+      <h3>Build plot from sides &amp; angles</h3>
+      <div class="row"><button class="btn" id="bPoly">New plot from sides &amp; angles…</button><button class="btn" id="bPolyEdit" title="Open the current plot in the sides &amp; angles editor">Edit current plot…</button></div>
+      <div class="mut">Type each side length and corner angle to create an exact polygon, with a live preview.</div>
+    </div>
+    <div class="sec" id="selSec"><h3>Selection</h3><div id="selPanel"></div></div>
+    <div class="sec"><h3>Locks</h3><div id="lockPanel"></div></div>
+    <div class="sec"><h3>Summary</h3><div id="summary"></div></div>
+    <div class="sec"><h3>Plot &amp; parcels</h3><div id="parcels"></div></div>
+    <div class="sec"><h3>Saving your work</h3>
+      <div class="mut">“Save” downloads a <b>project file (.json)</b> to your computer – this is your real backup and can be re-opened any time. Your browser also keeps an <b>automatic local copy</b> as a convenience; it is separate from the downloaded file, is tied to this browser/device, and can be erased if you clear browser data.</div>
+    </div>
+  </aside>
+</main>
+<div id="disc"><b>Disclaimer:</b> LandSplit provides estimates only. It is not a substitute for an official land survey or legal boundary verification.</div>
+
+<dialog id="dBihar"><div class="dh">Bihar land unit conversions<button class="btn sm" data-close>✕</button></div><div class="db">
+  <p class="mut">Local units differ between districts and even between villages. Enter the values that apply to <b>your</b> area (in square metres). The defaults are common approximations (1 bigha = 20 katha, 1 katha = 20 dhur, 1 katha ≈ 1361.25 ft²).</p>
+  <div class="row"><label>1 bigha =</label><input type="number" id="cBigha" step="any" min="0.0001"><span>m²</span></div>
+  <div class="row"><label>1 katha =</label><input type="number" id="cKatha" step="any" min="0.0001"><span>m²</span></div>
+  <div class="row"><label>1 dhur =</label><input type="number" id="cDhur" step="any" min="0.0001"><span>m²</span></div>
+  <div class="row"><button class="btn sm" id="cDef">Reset to defaults</button><span class="sp"></span><button class="btn pri" id="cOk">Apply</button></div>
+</div></dialog>
+
+<dialog id="dPoly"><div class="dh">Create plot from sides &amp; angles<button class="btn sm" data-close>✕</button></div><div class="db">
+  <p class="mut">Walk around the plot: enter each side's length and the <b>interior angle</b> at each corner (the angle inside the plot between the two sides). The last side and the last two angles are calculated for you – an n-sided plot needs 2n−3 measurements.</p>
+  <div class="row"><label style="min-width:60px">Sides</label><input type="number" id="pN" min="3" max="40" step="1" value="4" style="max-width:80px"><span class="mut" id="pU"></span><button class="btn sm" id="pReg" title="Use side 1's length for every side and equal angles">Make regular</button><button class="btn sm" id="pLoad" title="Fill the table with the sides and angles of the plot on the canvas">Load current plot</button></div>
+  <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start">
+    <div style="flex:1;min-width:240px" id="pRows"></div>
+    <div style="flex:1;min-width:240px"><canvas id="pCv" width="320" height="240" style="width:100%;max-width:320px;border:1px solid var(--bd);border-radius:8px;background:#fff"></canvas><div id="pRes" style="margin-top:6px"></div></div>
+  </div>
+  <div class="row" style="margin-top:10px"><span class="sp"></span><button class="btn" data-close>Cancel</button><button class="btn" id="pUpd" title="Reshape the plot on the canvas to these values (keeps its position, first side direction and dividing lines when the number of sides is unchanged)">Update current plot</button><button class="btn pri" id="pOk">Create new plot</button></div>
+</div></dialog>
+
+<dialog id="dHelp"><div class="dh">How to use LandSplit<button class="btn sm" data-close>✕</button></div><div class="db">
+  <h4>1. Draw the plot</h4>
+  <ul><li><b>Draw boundary</b>: click each corner in turn. Click the first point again, press <kbd>Enter</kbd> or double-click to close the plot. <kbd>Backspace</kbd> removes the last point, <kbd>Esc</kbd> cancels.</li>
+  <li><b>Parallelogram</b> (<kbd>P</kbd>): press and drag (or click twice) to set the first side, then click a third point; the fourth corner is calculated so opposite sides are parallel and equal. Or type base, side and angle under “Quick … by size”.</li>
+  <li><b>Parallel lines</b> are marked automatically: matching arrow marks (&gt;, &gt;&gt;) on lines with the same direction and a ∥ badge between neighbouring ones. Turn it off, or add the distance between the lines, in the settings.</li>
+  <li><b>Rectangle / Square</b>: press and drag on the canvas. Or type a width and length under “Quick rectangle by size”.</li>
+  <li><b>Names</b>: corners are named A, B, C… and sides AB, BC… (or 1, 2, 3… under “Naming”). Tick or untick “Show corner names” and “Show side names” in the settings to show or hide them.</li>
+  <li><b>Lock</b> a side length or corner angle: pick the <b>Lock</b> tool (<kbd>K</kbd>) and click a side to lock its length, or click a corner / its angle to lock that angle (click again to unlock). You can also tick “Lock” on a selected side or corner, or use the Locks panel. Locked values stay fixed while you drag corners or edit other values; the unlocked sides and angles stretch to fit.</li>
+  <li><b>Edit current plot…</b> opens the plot you drew in the sides &amp; angles editor so you can change any length or angle by typing, then “Update current plot”.</li>
+  <li><b>By typing</b>: use “Enter sides &amp; angles manually…” to type every side length and corner angle and get an exact polygon. Angles are shown live while you draw.</li></ul>
+  <h4>2. Edit it</h4>
+  <ul><li><b>Select</b>: click a corner, side, dividing line or parcel. Drag corners to reshape. Drag empty space to pan; scroll or pinch to zoom.</li>
+  <li><b>Add point</b>: click on a side to insert a corner. <b>Move point</b>: drag corners. <b>Move line</b>: drag a side (or a dividing line sideways).</li>
+  <li><b>Delete</b>: click a corner to remove it, a side to collapse it, or a dividing line to remove it.</li>
+  <li>Select a side to type its <b>actual length</b>, or use it as a <b>scale reference</b>. Select a corner to type its <b>interior angle</b>. You can also set “1 grid square = …” under Units &amp; scale.</li></ul>
+  <h4>3. Divide it</h4>
+  <ul><li><b>Divide line</b>: click (or press-and-drag) from one point on the boundary to another. Ends snap to the boundary or to another dividing line. Repeat for more parcels.</li>
+  <li>Select a dividing line to move it by an exact distance, or drag it with <b>Move line</b>. Parcel areas, lengths and angles update live.</li></ul>
+  <h4>4. Save &amp; share</h4>
+  <ul><li><b>Save / Save As</b> download a project <code>.json</code> file; <b>Open</b> loads one so you can keep editing.</li>
+  <li><b>Export CSV</b> gives lengths, angles, areas and perimeters. <b>Print / PDF</b> opens the print dialog – choose “Save as PDF”.</li></ul>
+  <h4>Shortcuts</h4>
+  <p><kbd>V</kbd> select · <kbd>B</kbd> boundary · <kbd>A</kbd> add point · <kbd>M</kbd> move point · <kbd>L</kbd> move line · <kbd>D</kbd> divide · <kbd>X</kbd> delete · <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo · <kbd>Ctrl</kbd>+<kbd>Y</kbd> redo · hold <kbd>Space</kbd> and drag to pan</p>
+  <p class="mut"><b>Disclaimer:</b> results are estimates and are not a substitute for an official land survey or legal boundary verification.</p>
+</div></dialog>
+
+<div id="report"></div>
+
+<script>
+// ==CORE==
+const EPS = 1e-9;
+const LEN = {m:{f:1,l:'m'},cm:{f:0.01,l:'cm'},mm:{f:0.001,l:'mm'},km:{f:1000,l:'km'},ft:{f:0.3048,l:'ft'},in:{f:0.0254,l:'in'},yd:{f:0.9144,l:'yd'}};
+const AREA_LABEL = {m2:'m²',cm2:'cm²',in2:'in²',ft2:'ft²',yd2:'yd²',acre:'acre',ha:'ha',bigha:'bigha',katha:'katha',dhur:'dhur',bkd:'bigha-katha-dhur'};
+const BIHAR_DEFAULT = {bigha:27225*0.09290304, katha:1361.25*0.09290304, dhur:68.0625*0.09290304};
+function areaFactors(S){return {m2:1,cm2:1e-4,in2:0.00064516,ft2:0.09290304,yd2:0.83612736,acre:4046.8564224,ha:10000,bigha:S.bihar.bigha,katha:S.bihar.katha,dhur:S.bihar.dhur};}
+const dist = (a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+function signedArea(p){let s=0;for(let i=0,n=p.length;i<n;i++){const a=p[i],b=p[(i+1)%n];s+=a.x*b.y-b.x*a.y;}return s/2;}
+function centroid(p){let A=0,cx=0,cy=0;for(let i=0,n=p.length;i<n;i++){const a=p[i],b=p[(i+1)%n],c=a.x*b.y-b.x*a.y;A+=c;cx+=(a.x+b.x)*c;cy+=(a.y+b.y)*c;}A/=2;if(Math.abs(A)<1e-14){let x=0,y=0;p.forEach(q=>{x+=q.x;y+=q.y});return {x:x/p.length,y:y/p.length};}return {x:cx/(6*A),y:cy/(6*A)};}
+function perimeterOf(p){let s=0;for(let i=0,n=p.length;i<n;i++)s+=dist(p[i],p[(i+1)%n]);return s;}
+function bboxOf(p){let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;p.forEach(q=>{x0=Math.min(x0,q.x);y0=Math.min(y0,q.y);x1=Math.max(x1,q.x);y1=Math.max(y1,q.y);});return {x0,y0,x1,y1,w:x1-x0,h:y1-y0};}
+function bboxDiag(p){const b=bboxOf(p);return Math.hypot(b.w,b.h);}
+// Interior angle via vector geometry (atan2 of cross & dot), correct for convex and reflex corners
+function cornerAngles(p){
+  const n=p.length, sa=signedArea(p), out=[];
+  for(let i=0;i<n;i++){
+    const c=p[i],pr=p[(i-1+n)%n],nx=p[(i+1)%n];
+    const vN={x:nx.x-c.x,y:nx.y-c.y}, vP={x:pr.x-c.x,y:pr.y-c.y};
+    const cr=(a,b)=>a.x*b.y-a.y*b.x, dt=(a,b)=>a.x*b.x+a.y*b.y;
+    let th, a0;
+    if(sa>=0){th=Math.atan2(cr(vN,vP),dt(vN,vP));a0=Math.atan2(vN.y,vN.x);}
+    else{th=Math.atan2(cr(vP,vN),dt(vP,vN));a0=Math.atan2(vP.y,vP.x);}
+    if(th<0)th+=2*Math.PI;
+    const deg=th*180/Math.PI;
+    out.push({interior:deg,exterior:360-deg,a0,th});
+  }
+  return out;
+}
+function cleanPoly(p){
+  let q=p.map(a=>({x:a.x,y:a.y})), ch=true, it=0;
+  const e=1e-9*Math.max(1,bboxDiag(p));
+  while(ch&&q.length>3&&it++<200){
+    ch=false;
+    for(let i=0;i<q.length;i++){
+      const a=q[(i-1+q.length)%q.length],b=q[i],c=q[(i+1)%q.length];
+      const d1=dist(a,b),d2=dist(b,c);
+      const cr=(b.x-a.x)*(c.y-b.y)-(b.y-a.y)*(c.x-b.x), dt=(b.x-a.x)*(c.x-b.x)+(b.y-a.y)*(c.y-b.y);
+      if(d1<e||d2<e||(Math.abs(cr)<1e-9*d1*d2&&dt>0)){q.splice(i,1);ch=true;break;}
+    }
+  }
+  return q;
+}
+function distPtSeg(p,a,b){
+  const dx=b.x-a.x,dy=b.y-a.y,l2=dx*dx+dy*dy;
+  let u=l2<1e-18?0:((p.x-a.x)*dx+(p.y-a.y)*dy)/l2;
+  u=Math.max(0,Math.min(1,u));
+  const x=a.x+dx*u,y=a.y+dy*u;
+  return {d:Math.hypot(p.x-x,p.y-y),u,x,y};
+}
+// 1 inside, 0 outside, -1 on boundary
+function pip(pt,poly,e){
+  e=e||1e-9;
+  for(let i=0,n=poly.length;i<n;i++){if(distPtSeg(pt,poly[i],poly[(i+1)%n]).d<=e)return -1;}
+  let ins=false;
+  for(let i=0,n=poly.length,j=n-1;i<n;j=i++){
+    const a=poly[i],b=poly[j];
+    if((a.y>pt.y)!==(b.y>pt.y)&&pt.x<(b.x-a.x)*(pt.y-a.y)/(b.y-a.y)+a.x)ins=!ins;
+  }
+  return ins?1:0;
+}
+function orient(a,b,c){const v=(b.x-a.x)*(c.y-b.y)-(b.y-a.y)*(c.x-b.x);return v;}
+function segInter(p1,p2,p3,p4){
+  const o1=orient(p1,p2,p3),o2=orient(p1,p2,p4),o3=orient(p3,p4,p1),o4=orient(p3,p4,p2);
+  const sc=Math.max(1,dist(p1,p2))*Math.max(1,dist(p3,p4))*1e-12;
+  const s=v=>Math.abs(v)<=sc?0:(v>0?1:-1);
+  const a=s(o1),b=s(o2),c=s(o3),d=s(o4);
+  if(a!==b&&c!==d)return true;
+  const on=(p,q,r)=>Math.min(p.x,q.x)-1e-12<=r.x&&r.x<=Math.max(p.x,q.x)+1e-12&&Math.min(p.y,q.y)-1e-12<=r.y&&r.y<=Math.max(p.y,q.y)+1e-12;
+  if(a===0&&on(p1,p2,p3))return true;
+  if(b===0&&on(p1,p2,p4))return true;
+  if(c===0&&on(p3,p4,p1))return true;
+  if(d===0&&on(p3,p4,p2))return true;
+  return false;
+}
+// Simple polygon test: no non-adjacent edges touch, adjacent edges do not fold back
+function isSimple(p){
+  const n=p.length; if(n<3)return false;
+  for(let i=0;i<n;i++){
+    const a=p[i],b=p[(i+1)%n];
+    if(dist(a,b)<1e-12)return false;
+    for(let j=i+1;j<n;j++){
+      const c=p[j],d=p[(j+1)%n];
+      if(j===i+1||(i===0&&j===n-1)){
+        const sh=j===i+1?b:a, o1=j===i+1?a:b, o2=j===i+1?d:c;
+        const cr=(sh.x-o1.x)*(o2.y-sh.y)-(sh.y-o1.y)*(o2.x-sh.x), dt=(sh.x-o1.x)*(o2.x-sh.x)+(sh.y-o1.y)*(o2.y-sh.y);
+        if(Math.abs(cr)<1e-12*dist(o1,sh)*dist(sh,o2)&&dt<0)return false;
+        continue;
+      }
+      if(segInter(a,b,c,d))return false;
+    }
+  }
+  return Math.abs(signedArea(p))>1e-12;
+}
+// Split polygon with the line through A,B but only along chords covered by segment AB (+tol)
+function splitPoly(poly,A,B,tol,depth){
+  depth=depth||0;
+  const dx=B.x-A.x,dy=B.y-A.y,L=Math.hypot(dx,dy);
+  if(L<1e-12||depth>40)return [poly];
+  const ux=dx/L,uy=dy/L,nx=-uy,ny=ux;
+  const eps=1e-8*Math.max(1,bboxDiag(poly));
+  const n=poly.length, s=poly.map(p=>(p.x-A.x)*nx+(p.y-A.y)*ny);
+  const ring=[];
+  for(let i=0;i<n;i++){
+    const p=poly[i],q=poly[(i+1)%n],si=s[i],sj=s[(i+1)%n];
+    ring.push({x:p.x,y:p.y,on:Math.abs(si)<eps});
+    if(Math.abs(si)>=eps&&Math.abs(sj)>=eps&&(si>0)!==(sj>0)){
+      const k=si/(si-sj);
+      ring.push({x:p.x+(q.x-p.x)*k,y:p.y+(q.y-p.y)*k,on:true});
+    }
+  }
+  ring.forEach(r=>{r.t=(r.x-A.x)*ux+(r.y-A.y)*uy;});
+  const idx=[];ring.forEach((r,i)=>{if(r.on)idx.push(i);});
+  idx.sort((a,b)=>ring[a].t-ring[b].t);
+  for(let k=0;k+1<idx.length;k++){
+    const i1=idx[k],i2=idx[k+1],r1=ring[i1],r2=ring[i2];
+    if(r2.t-r1.t<=eps)continue;
+    if(r1.t<-tol||r2.t>L+tol)continue;
+    const m={x:(r1.x+r2.x)/2,y:(r1.y+r2.y)/2};
+    if(pip(m,poly,eps)!==1)continue;
+    const lo=Math.min(i1,i2),hi=Math.max(i1,i2);
+    const p1=ring.slice(lo,hi+1).map(r=>({x:r.x,y:r.y}));
+    const p2=ring.slice(hi).concat(ring.slice(0,lo+1)).map(r=>({x:r.x,y:r.y}));
+    const tiny=1e-12*Math.max(1,Math.abs(signedArea(poly)));
+    if(p1.length<3||p2.length<3||Math.abs(signedArea(p1))<=tiny||Math.abs(signedArea(p2))<=tiny)continue;
+    return splitPoly(p1,A,B,tol,depth+1).concat(splitPoly(p2,A,B,tol,depth+1));
+  }
+  return [poly];
+}
+function statsOf(poly,s){
+  const areaDu=Math.abs(signedArea(poly));
+  const edges=poly.map((a,i)=>{const b=poly[(i+1)%poly.length];return {a,b,lenM:dist(a,b)*s};});
+  return {areaDu,areaM2:areaDu*s*s,perimM:edges.reduce((t,e)=>t+e.lenM,0),edges,angles:cornerAngles(poly)};
+}
+function labelPoint(poly){
+  const c=centroid(poly);
+  if(pip(c,poly,1e-9)===1)return c;
+  const ys=[c.y];const b=bboxOf(poly);for(let k=1;k<8;k++){ys.push(b.y0+b.h*k/8);}
+  let best=null,bw=-1;
+  ys.forEach(y=>{
+    const xs=[];
+    for(let i=0,n=poly.length;i<n;i++){const a=poly[i],q=poly[(i+1)%n];if((a.y>y)!==(q.y>y))xs.push(a.x+(y-a.y)*(q.x-a.x)/(q.y-a.y));}
+    xs.sort((p,q)=>p-q);
+    for(let k=0;k+1<xs.length;k+=2){const w=xs[k+1]-xs[k];if(w>bw){bw=w;best={x:(xs[k]+xs[k+1])/2,y}}}
+  });
+  return best||c;
+}
+function computeAll(S){
+  const s=S.gridValue*LEN[S.gridUnit].f;
+  const R={errors:[],warnings:[],plot:null,parcels:[],segs:[],divInfo:[],s,check:null};
+  const pts=S.pts;
+  if(!S.closed||pts.length<3)return R;
+  R.plot=statsOf(pts,s);
+  if(!isSimple(pts))R.errors.push('The boundary crosses itself (self-intersecting). Move a corner to fix it – areas are not reliable until then.');
+  if(R.plot.areaDu<1e-9)R.errors.push('The plot has zero area.');
+  if(R.errors.length)return R;
+  const diag=bboxDiag(pts),tol=0.015*diag,totalDu=R.plot.areaDu;
+  let parcels=[pts.map(p=>({x:p.x,y:p.y}))];
+  S.divs.forEach((d,idx)=>{
+    const L=dist(d.a,d.b),info={id:d.id,idx,lenM:L*s,splits:0};
+    R.divInfo.push(info);
+    if(L<1e-9){R.warnings.push('Dividing line '+(idx+1)+' has zero length.');return;}
+    const next=[];
+    parcels.forEach(p=>{const r=splitPoly(p,d.a,d.b,tol);info.splits+=r.length-1;r.forEach(x=>next.push(x));});
+    parcels=next;
+    if(info.splits===0){
+      const inside=[d.a,d.b].some(p=>pip(p,pts,diag*1e-7)===1);
+      R.warnings.push(inside?'Dividing line '+(idx+1)+' does not cut the plot: an end stops inside the land. Extend it to the boundary or to another dividing line.'
+        :'Dividing line '+(idx+1)+' does not cut the plot (it lies outside the land boundary or only touches it).');
+    }else{
+      [d.a,d.b].forEach((p,k)=>{if(!p.att&&pip(p,pts,diag*1e-7)===1)R.warnings.push('Dividing line '+(idx+1)+' has a free end inside the plot; it only divides where it fully crosses a parcel.');});
+    }
+  });
+  const kept=[];
+  parcels.forEach(p=>{if(Math.abs(signedArea(p))<1e-9*totalDu){R.warnings.push('A zero-area parcel was ignored.');}else kept.push(p);});
+  // conform T-junctions so neighbouring parcels share identical vertices on shared lines
+  const ce=1e-7*Math.max(1,diag);
+  const conf=kept.map((p,pi)=>{
+    const out=[];
+    for(let i=0,n=p.length;i<n;i++){
+      const a=p[i],b=p[(i+1)%n];out.push(a);
+      const ins=[];
+      kept.forEach((q,qi)=>{if(qi===pi)return;q.forEach(v=>{const r=distPtSeg(v,a,b);if(r.d<ce&&dist(v,a)>ce&&dist(v,b)>ce)ins.push({v,u:r.u});});});
+      ins.sort((x,y)=>x.u-y.u);
+      ins.forEach((x,k)=>{if(!k||dist(x.v,ins[k-1].v)>ce)out.push({x:x.v.x,y:x.v.y});});
+    }
+    return out;
+  });
+  const cnt=new Map(),key=q=>Math.round(q.x*1e4)+','+Math.round(q.y*1e4);
+  conf.forEach(p=>{
+    const sa=signedArea(p);
+    p.forEach((a,i)=>{
+      const b=p[(i+1)%p.length];if(dist(a,b)<1e-12)return;
+      const ka=key(a),kb=key(b),k=ka<kb?ka+'|'+kb:kb+'|'+ka;
+      const dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy);
+      const nx=sa>=0?dy/l:-dy/l,ny=sa>=0?-dx/l:dx/l;
+      if(cnt.has(k))cnt.get(k).shared=true;
+      else cnt.set(k,{a,b,lenM:l*s,shared:false,nx,ny});
+    });
+  });
+  R.segs=Array.from(cnt.values());
+  R.parcels=kept.map((raw,i)=>{
+    const poly=cleanPoly(raw),st=statsOf(poly,s);
+    st.raw=conf[i];st.poly=poly;st.centroid=centroid(poly);st.labelPt=labelPoint(poly);
+    return st;
+  });
+  const sum=R.parcels.reduce((t,p)=>t+p.areaM2,0);
+  R.check={total:R.plot.areaM2,sum,diff:sum-R.plot.areaM2,ok:Math.abs(sum-R.plot.areaM2)<=1e-9*Math.max(1,R.plot.areaM2)};
+  if(!R.check.ok)R.warnings.push('Parcel areas do not add up to the original area – check the dividing lines.');
+  return R;
+}
+// Largest-remainder rounding so rounded parcel areas add up to the rounded total
+function adjRound(vals,total,d){
+  const f=Math.pow(10,d),tgt=Math.round(total*f);
+  const fl=vals.map(v=>Math.floor(v*f+1e-7));
+  const rem=tgt-fl.reduce((a,b)=>a+b,0);
+  if(rem<0||rem>vals.length)return vals.map(v=>Math.round(v*f)/f);
+  const order=vals.map((v,i)=>[v*f-fl[i],i]).sort((a,b)=>b[0]-a[0]);
+  const out=fl.slice();
+  for(let k=0;k<rem;k++)out[order[k][1]]++;
+  return out.map(v=>v/f);
+}
+function fmtNum(v,d){try{return v.toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d});}catch(e){return v.toFixed(d);}}
+function fmtBKD(dhur,S){
+  const dpk=S.bihar.katha/S.bihar.dhur,dpb=S.bihar.bigha/S.bihar.dhur;
+  let r=Math.round(dhur*100)/100;
+  const b=Math.floor(r/dpb+1e-9);r-=b*dpb;
+  const k=Math.floor(r/dpk+1e-9);r-=k*dpk;
+  r=Math.max(0,Math.round(r*100)/100);
+  return b+' bigha '+k+' katha '+r.toFixed(2)+' dhur';
+}
+function formatAreas(S,list,total){
+  const F=areaFactors(S),u=S.areaUnit,bkd=u==='bkd',base=bkd?'dhur':u,d=bkd?2:S.decimals;
+  const vals=list.map(m=>m/F[base]),tot=total/F[base];
+  const adj=adjRound(vals,tot,d),f=Math.pow(10,d),totR=Math.round(tot*f)/f;
+  const fmt=v=>bkd?fmtBKD(v,S):fmtNum(v,d)+' '+AREA_LABEL[u];
+  return {strs:adj.map(fmt),nums:adj,total:fmt(totR),totalNum:totR,sum:fmt(adj.reduce((a,b)=>a+b,0)),unit:bkd?'dhur':AREA_LABEL[u]};
+}
+function fmtLen(S,m){return fmtNum(m/LEN[S.lenUnit].f,S.decimals)+' '+LEN[S.lenUnit].l;}
+function fmtAng(deg){return (Math.round(deg*100)/100)+'°';}
+// ---- parallel lines: groups of lines with the same direction, and the neighbouring pairs that face each other ----
+function parallelInfo(lines,tolDeg,diag){
+  const tol=Math.sin((tolDeg||0.05)*Math.PI/180),D=Math.max(diag||1,1e-12),groups=[];
+  lines.forEach((l,i)=>{
+    const dx=l.b.x-l.a.x,dy=l.b.y-l.a.y,len=Math.hypot(dx,dy);if(len<1e-9*D)return;
+    const o={i,a:l.a,b:l.b,name:l.name,ux:dx/len,uy:dy/len};
+    let g=groups.find(g=>Math.abs(g.ux*o.uy-g.uy*o.ux)<tol);
+    if(!g){let ux=o.ux,uy=o.uy;if(ux<-1e-12||(Math.abs(ux)<=1e-12&&uy<0)){ux=-ux;uy=-uy;}g={ux,uy,lines:[],pairs:[]};groups.push(g);}
+    g.lines.push(o);
+  });
+  const out=[];
+  groups.forEach(g=>{
+    if(g.lines.length<2)return;
+    const nx=-g.uy,ny=g.ux;
+    g.lines.forEach(l=>{
+      l.o=((l.a.x+l.b.x)/2)*nx+((l.a.y+l.b.y)/2)*ny;
+      const ta=l.a.x*g.ux+l.a.y*g.uy,tb=l.b.x*g.ux+l.b.y*g.uy;l.t0=Math.min(ta,tb);l.t1=Math.max(ta,tb);
+    });
+    const e=1e-7*D;
+    if(Math.max(...g.lines.map(l=>l.o))-Math.min(...g.lines.map(l=>l.o))<e)return;   // all on one straight line: not a parallel pair
+    for(let i=0;i<g.lines.length;i++)for(let j=i+1;j<g.lines.length;j++){
+      const A=g.lines[i],B=g.lines[j],d=Math.abs(A.o-B.o);
+      if(d<e)continue;
+      const t0=Math.max(A.t0,B.t0),t1=Math.min(A.t1,B.t1);
+      if(t1-t0<e)continue;
+      const lo=Math.min(A.o,B.o),hi=Math.max(A.o,B.o);
+      const blocked=g.lines.some((K,k)=>k!==i&&k!==j&&K.o>lo+e&&K.o<hi-e&&Math.min(K.t1,t1)-Math.max(K.t0,t0)>e);
+      if(blocked)continue;
+      g.pairs.push({a:A,b:B,t0,t1,dist:d});
+    }
+    out.push({ux:g.ux,uy:g.uy,nx,ny,lines:g.lines,pairs:g.pairs});
+  });
+  return out;
+}
+// ---- constraint solver: keeps locked side lengths / angles while a value is edited ----
+function angleAt(pr,p,nx,sg){const ax=nx.x-p.x,ay=nx.y-p.y,bx=pr.x-p.x,by=pr.y-p.y;let t=Math.atan2(sg*(ax*by-ay*bx),ax*bx+ay*by);if(t<0)t+=2*Math.PI;return t;}
+function wrapPi(d){while(d>Math.PI)d-=2*Math.PI;while(d<=-Math.PI)d+=2*Math.PI;return d;}
+function gaussSolve(A,b){
+  const m=b.length,M=A.map((r,i)=>r.concat([b[i]]));
+  for(let c=0;c<m;c++){
+    let pv=c;for(let r=c+1;r<m;r++)if(Math.abs(M[r][c])>Math.abs(M[pv][c]))pv=r;
+    if(Math.abs(M[pv][c])<1e-15)continue;
+    [M[c],M[pv]]=[M[pv],M[c]];
+    for(let r=c+1;r<m;r++){const f=M[r][c]/M[c][c];if(f)for(let k=c;k<=m;k++)M[r][k]-=f*M[c][k];}
+  }
+  const x=Array(m).fill(0);
+  for(let r=m-1;r>=0;r--){let t=M[r][m];for(let k=r+1;k<m;k++)t-=M[r][k]*x[k];x[r]=Math.abs(M[r][r])<1e-15?0:t/M[r][r];}
+  return x;
+}
+// cons: {t:'s',i,v} side i→i+1 has length v · {t:'a',i,v} interior angle at i is v degrees · {t:'p',i,x,y} corner i sits at (x,y)
+// wts: optional per-corner "resistance to moving" (large = stays put). Returns {ok,pts,res}
+function solveShape(pts0,cons,wts){
+  const n=pts0.length,sg=signedArea(pts0)>=0?1:-1,D=Math.max(bboxDiag(pts0),1e-12);
+  let Q=pts0.map(p=>({x:p.x/D,y:p.y/D}));
+  const C=cons.map(c=>c.t==='s'?{t:'s',i:c.i,v:c.v/D}:c.t==='a'?{t:'a',i:c.i,v:c.v*Math.PI/180}:{t:'p',i:c.i,x:c.x/D,y:c.y/D});
+  const W=wts?wts.slice():Array(n).fill(1);
+  const comps=(c,P)=>{
+    if(c.t==='s')return [dist(P[c.i],P[(c.i+1)%n])-c.v];
+    if(c.t==='a')return [wrapPi(angleAt(P[(c.i-1+n)%n],P[c.i],P[(c.i+1)%n],sg)-c.v)];
+    return [P[c.i].x-c.x,P[c.i].y-c.y];
+  };
+  const verts=c=>c.t==='s'?[c.i,(c.i+1)%n]:c.t==='a'?[(c.i-1+n)%n,c.i,(c.i+1)%n]:[c.i];
+  const resid=P=>{let r=[];C.forEach(c=>{r=r.concat(comps(c,P));});return r;};
+  const norm=r=>r.reduce((m,v)=>Math.max(m,Math.abs(v)),0);
+  let r=resid(Q),nr=norm(r);
+  for(let it=0;it<120&&nr>1e-13;it++){
+    const rows=[];
+    C.forEach(c=>{
+      const k=comps(c,Q).length,vs=verts(c),rowsC=Array.from({length:k},()=>({}));
+      vs.forEach(v=>['x','y'].forEach((ax,axi)=>{
+        const h=1e-7,o=Q[v][ax];
+        Q[v][ax]=o+h;const fp=comps(c,Q);Q[v][ax]=o-h;const fm=comps(c,Q);Q[v][ax]=o;
+        for(let q=0;q<k;q++)rowsC[q][v*2+axi]=(fp[q]-fm[q])/(2*h);
+      }));
+      rowsC.forEach(x=>rows.push(x));
+    });
+    const m=rows.length,A=Array.from({length:m},()=>Array(m).fill(0));
+    for(let a=0;a<m;a++)for(let b=a;b<m;b++){
+      let t=0;for(const key in rows[a]){if(rows[b][key]!==undefined){const v=Math.floor(+key/2);t+=rows[a][key]*rows[b][key]/W[v];}}
+      A[a][b]=A[b][a]=t;
+    }
+    for(let a=0;a<m;a++)A[a][a]+=1e-11;
+    const y=gaussSolve(A,r),dx=Array(n*2).fill(0);
+    rows.forEach((row,a)=>{for(const key in row){const v=Math.floor(+key/2);dx[+key]-=y[a]*row[key]/W[v];}});
+    let t=1,acc=false;
+    for(let ls=0;ls<14;ls++){
+      const Q2=Q.map((p,v)=>({x:p.x+dx[v*2]*t,y:p.y+dx[v*2+1]*t})),r2=resid(Q2),n2=norm(r2);
+      if(n2<nr||ls===13){Q=Q2;r=r2;if(n2<nr)acc=true;nr=n2;break;}
+      t/=2;
+    }
+    if(!acc)break;
+  }
+  const pts=Q.map(p=>({x:p.x*D,y:p.y*D}));
+  return {ok:nr<1e-8,pts,res:nr};
+}
+// ==/CORE==
+
+// ================= APP =================
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const cv=$('cv'),ctx=cv.getContext('2d');
+const LS_KEY='landsplit_autosave_v1';
+function newState(){return {name:'Untitled plot',pts:[],closed:false,divs:[],nextId:1,names:[],locks:{sides:{},angles:{}},gridValue:1,gridUnit:'m',lenUnit:'m',areaUnit:'m2',decimals:2,bihar:Object.assign({},BIHAR_DEFAULT),opts:{parallel:true,parallelDist:false,cornerNames:true,sideNames:true,nameStyle:'letters',snap:true,grid:true,lengths:true,angles:'interior',labels:true,extend:true}};}
+let S=newState(),C=computeAll(S),DISP=null;
+let undoStack=[],redoStack=[],dirty=false,lastFile=null;
+let view={ox:60,oy:60,z:24};
+let tool='select',sel=null,drag=null,divDraft=null,rectDraft=null,parDraft=null,mouseW=null,spaceDown=false,dragInvalid=false;
+const pointers=new Map();let pinch=null;
+
+// ---------- tools ----------
+const ICON={
+select:'<path d="M5 3l14 7-6 2-2 6z"/>',
+draw:'<path d="M4 18L7 6l10-2 3 10-8 6z"/><circle cx="7" cy="6" r="1.2"/><circle cx="17" cy="4" r="1.2"/>',
+rect:'<rect x="3" y="6" width="18" height="12"/>',
+square:'<rect x="5" y="5" width="14" height="14"/><path d="M5 9h4v-4"/>',
+para:'<path d="M3 18L8 6h13l-5 12z"/>',
+add:'<path d="M3 19h18"/><path d="M12 5v8M8 9h8"/>',
+move:'<circle cx="12" cy="12" r="2.5"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>',
+moveline:'<path d="M4 12h16M12 3l-3 3h6zM12 21l-3-3h6z"/>',
+lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',
+divide:'<rect x="4" y="5" width="16" height="14"/><path d="M4 17L20 7" stroke-dasharray="3 2"/>',
+del:'<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>',
+pan:'<path d="M9 11V5.5a1.5 1.5 0 013 0V11M12 10V4.5a1.5 1.5 0 013 0V11M15 10.5V6.5a1.5 1.5 0 013 0V14c0 4-2 7-6 7-3 0-4.5-1.5-6-4l-2-3a1.5 1.5 0 012.3-1.8L9 14"/>',
+undo:'<path d="M9 7L4 12l5 5M4 12h10a6 6 0 010 8"/>',
+redo:'<path d="M15 7l5 5-5 5M20 12H10a6 6 0 000 8"/>',
+zin:'<circle cx="11" cy="11" r="6"/><path d="M16 16l5 5M8 11h6M11 8v6"/>',
+zout:'<circle cx="11" cy="11" r="6"/><path d="M16 16l5 5M8 11h6"/>',
+fit:'<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>',
+clear:'<path d="M5 5l14 14M19 5L5 19"/>'
+};
+const TOOLS=[
+['select','Select','V','Select'],['draw','Boundary','B','Draw boundary'],['rect','Rectangle','','Draw rectangle'],['square','Square','','Draw square'],['para','Parallelogram','P','Draw parallelogram (3 points)'],
+['add','Add pt','A','Add point'],['move','Move pt','M','Move point'],['moveline','Move line','L','Move line'],['lock','Lock','K','Lock / unlock a side length or corner angle'],['divide','Divide','D','Draw division line'],['del','Delete','X','Delete point or line'],['pan','Pan','','Pan view']
+];
+const HINT={
+select:'Click a corner, side, dividing line or parcel to select it. Drag corners or dividing-line ends to reshape. Drag empty space to pan; scroll / pinch to zoom.',
+draw:'Click to place each corner – the angle at every corner (and the live angle at your cursor) is shown in orange while you draw. Click the first point, press Enter, or double-click to close the plot. Backspace removes the last point, Esc cancels.',
+para:'Parallelogram: press and drag (or click twice) to set the first side, then click a third point. The fourth corner is calculated so opposite sides are parallel and equal. Esc cancels.',
+rect:'Press and drag to draw a rectangle. (Or type a width and length under “Quick rectangle by size”.)',
+square:'Press and drag to draw a square.',
+add:'Click on a side of the plot to insert a new corner there, then use Move point to drag it.',
+move:'Drag a corner (or the end of a dividing line) to a new position. Lengths, angles and areas update live.',
+moveline:'Drag a boundary side to shift it, or drag a dividing line sideways to change its position.',
+lock:'Click a SIDE to lock or unlock its length. Click a CORNER (or its angle label) to lock or unlock that angle. Locked values stay fixed while you edit the rest; unlocked sides and angles stretch to fit.',
+divide:'Click a start point on the boundary, then an end point on the boundary (or press and drag). Ends snap to the boundary or other dividing lines. Esc cancels.',
+del:'Click a corner to remove it, a boundary side to collapse it, or a dividing line to delete it.',
+pan:'Drag to pan the view. Scroll or pinch to zoom.'
+};
+function buildTools(){
+  const t=$('tools');let h='';
+  TOOLS.forEach(([id,lab,key,title],i)=>{
+    h+=`<button class="tb" data-tool="${id}" title="${title}${key?' ('+key+')':''}"><svg viewBox="0 0 24 24">${ICON[id]}</svg><span${lab.length>9?' style="font-size:8px;letter-spacing:-.3px"':''}>${lab}</span></button>`;
+    if(i===4||i===10)h+='<div class="tsep"></div>';
+  });
+  h+='<div class="tsep"></div>';
+  [['undo','Undo','Undo (Ctrl+Z)'],['redo','Redo','Redo (Ctrl+Y)'],['zin','Zoom +','Zoom in'],['zout','Zoom −','Zoom out'],['fit','Reset view','Reset view'],['clear','Clear','Clear drawing']].forEach(([id,lab,title])=>{
+    h+=`<button class="tb" data-act="${id}" id="act-${id}" title="${title}"><svg viewBox="0 0 24 24">${ICON[id]}</svg>${lab}</button>`;
+  });
+  t.innerHTML=h;
+  t.onclick=e=>{
+    const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.tool)setTool(b.dataset.tool);
+    else if(b.dataset.act)doAct(b.dataset.act);
+  };
+}
+function setTool(t){
+  tool=t;divDraft=null;rectDraft=null;parDraft=null;drag=null;
+  document.querySelectorAll('.tb[data-tool]').forEach(b=>b.classList.toggle('on',b.dataset.tool===t));
+  $('hint').textContent=HINT[t];
+  cv.style.cursor=t==='select'||t==='move'||t==='moveline'?'default':(t==='pan'?'grab':(t==='lock'?'pointer':'crosshair'));
+  render();
+}
+function doAct(a){
+  if(a==='undo')undo();else if(a==='redo')redo();
+  else if(a==='zin')zoomAt(cv.clientWidth/2,cv.clientHeight/2,1.25);
+  else if(a==='zout')zoomAt(cv.clientWidth/2,cv.clientHeight/2,0.8);
+  else if(a==='fit'){fitView();render();}
+  else if(a==='clear')clearAll();
+}
+
+// ---------- state helpers ----------
+function snap(){return JSON.stringify({pts:S.pts,closed:S.closed,divs:S.divs,nextId:S.nextId,names:S.names,locks:S.locks,gridValue:S.gridValue,gridUnit:S.gridUnit});}
+function restore(str){const o=JSON.parse(str);S.pts=o.pts;S.closed=o.closed;S.divs=o.divs;S.nextId=o.nextId;S.names=o.names;S.locks=o.locks||{sides:{},angles:{}};S.gridValue=o.gridValue;S.gridUnit=o.gridUnit;sel=null;syncControls();}
+function beginChange(){undoStack.push(snap());if(undoStack.length>200)undoStack.shift();redoStack=[];}
+function pushUndoIfChanged(s0){if(snap()!==s0){undoStack.push(s0);if(undoStack.length>200)undoStack.shift();redoStack=[];markDirty();}}
+function undo(){if(!undoStack.length)return;redoStack.push(snap());restore(undoStack.pop());markDirty();refresh();}
+function redo(){if(!redoStack.length)return;undoStack.push(snap());restore(redoStack.pop());markDirty();refresh();}
+function markDirty(){dirty=true;$('dirty').style.display='inline-block';queueAutosave();}
+function changed(){markDirty();refresh();}
+let asT=null;
+function queueAutosave(){clearTimeout(asT);asT=setTimeout(()=>{try{localStorage.setItem(LS_KEY,JSON.stringify(serialize()));}catch(e){}},500);}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),3200);}
+
+// ---------- attachments of dividing-line ends ----------
+function freezeAtt(){S.divs.forEach(d=>{d.a.att=null;d.b.att=null;});}
+function autoAttach(){
+  if(!S.closed)return;
+  const diag=bboxDiag(S.pts),tol=1e-6*Math.max(1,diag);
+  S.divs.forEach((d,di)=>{[d.a,d.b].forEach(p=>{
+    if(p.att)return;
+    let best=null;
+    S.pts.forEach((a,i)=>{const r=distPtSeg(p,a,S.pts[(i+1)%S.pts.length]);if(r.d<tol&&(!best||r.d<best.d))best={d:r.d,att:{t:'b',i,u:r.u}};});
+    if(!best)for(let j=0;j<di;j++){const o=S.divs[j],r=distPtSeg(p,o.a,o.b);if(r.d<tol&&(!best||r.d<best.d))best={d:r.d,att:{t:'d',id:o.id,u:r.u}};}
+    if(best)p.att=best.att;
+  });});
+}
+function updateAtt(){
+  if(!S.closed)return;
+  for(let pass=0;pass<3;pass++)S.divs.forEach(d=>{[d.a,d.b].forEach(p=>{
+    const a=p.att;if(!a)return;
+    if(a.t==='b'){const A=S.pts[a.i],B=S.pts[(a.i+1)%S.pts.length];if(!A||!B){p.att=null;return;}p.x=A.x+(B.x-A.x)*a.u;p.y=A.y+(B.y-A.y)*a.u;}
+    else{const h=S.divs.find(q=>q.id===a.id);if(!h){p.att=null;return;}p.x=h.a.x+(h.b.x-h.a.x)*a.u;p.y=h.a.y+(h.b.y-h.a.y)*a.u;}
+  });});
+}
+// nearest boundary edge / earlier dividing line to a world point
+function findHost(w,selfIdx,thr){
+  let best=null;
+  if(S.closed)S.pts.forEach((a,i)=>{const r=distPtSeg(w,a,S.pts[(i+1)%S.pts.length]);if(r.d<thr&&(!best||r.d<best.d))best={d:r.d,x:r.x,y:r.y,att:{t:'b',i,u:r.u}};});
+  for(let j=0;j<Math.min(selfIdx,S.divs.length);j++){const o=S.divs[j],r=distPtSeg(w,o.a,o.b);if(r.d<thr&&(!best||r.d<best.d-1e-12))best={d:r.d,x:r.x,y:r.y,att:{t:'d',id:o.id,u:r.u}};}
+  return best;
+}
+function rayHit(O,dir,selfIdx){
+  let best=null;
+  const test=(a,b,att)=>{
+    const ex=b.x-a.x,ey=b.y-a.y,den=dir.x*ey-dir.y*ex;
+    if(Math.abs(den)<1e-14)return;
+    const t=((a.x-O.x)*ey-(a.y-O.y)*ex)/den,u=((a.x-O.x)*dir.y-(a.y-O.y)*dir.x)/den;
+    if(t>1e-9&&u>=-1e-9&&u<=1+1e-9&&(!best||t<best.t))best={t,x:O.x+dir.x*t,y:O.y+dir.y*t,att:Object.assign({},att,{u:Math.max(0,Math.min(1,u))})};
+  };
+  S.pts.forEach((a,i)=>test(a,S.pts[(i+1)%S.pts.length],{t:'b',i}));
+  for(let j=0;j<selfIdx;j++){const o=S.divs[j];test(o.a,o.b,{t:'d',id:o.id});}
+  return best;
+}
+function extendEnd(d,which){
+  const idx=S.divs.indexOf(d),p=d[which],o=d[which==='a'?'b':'a'];
+  if(p.att||!S.closed)return;
+  if(pip(p,S.pts,1e-9)!==1)return;
+  const L=dist(p,o);if(L<1e-12)return;
+  const h=rayHit(p,{x:(p.x-o.x)/L,y:(p.y-o.y)/L},idx);
+  if(h){p.x=h.x;p.y=h.y;p.att=h.att;}
+}
+
+// ---------- geometry edits ----------
+function replaceWithPlot(poly){
+  S.pts=poly;S.closed=true;S.divs=[];S.names=[];S.locks={sides:{},angles:{}};sel=null;
+}
+function confirmReplace(){return !(S.closed&&S.pts.length)||confirm('This replaces the current plot and removes its dividing lines. Continue? (You can undo.)');}
+function makeRect(x0,y0,x1,y1){return [{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}];}
+function scaleM(){return S.gridValue*LEN[S.gridUnit].f;}
+function deletePoint(i){
+  if(S.pts.length<=3){toast('A plot needs at least 3 corners.');return;}
+  const np=S.pts.filter((_,k)=>k!==i);
+  if(!isSimple(np)){toast('Cannot delete: the boundary would cross itself.');return;}
+  beginChange();dropLocks();freezeAtt();S.pts=np;autoAttach();sel=null;changed();
+}
+function collapseEdge(i){
+  const n=S.pts.length;if(n<=3){toast('A plot needs at least 3 corners.');return;}
+  const j=(i+1)%n,a=S.pts[i],b=S.pts[j],m={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+  const np=S.pts.slice();
+  if(j>i)np.splice(i,2,m);else{np.splice(i,1);np[0]=m;}
+  if(!isSimple(np)){toast('Cannot delete this side: the boundary would cross itself.');return;}
+  beginChange();dropLocks();freezeAtt();S.pts=np;autoAttach();sel=null;changed();
+}
+function deleteDiv(id){
+  const k=S.divs.findIndex(d=>d.id===id);if(k<0)return;
+  beginChange();
+  S.divs.forEach(d=>{[d.a,d.b].forEach(p=>{if(p.att&&p.att.t==='d'&&p.att.id===id)p.att=null;});});
+  S.divs.splice(k,1);sel=null;changed();
+}
+function clearAll(){
+  if(!S.pts.length&&!S.divs.length){toast('Nothing to clear.');return;}
+  if(!confirm('Clear the whole drawing (boundary and dividing lines)? You can use Undo to bring it back.'))return;
+  beginChange();S.pts=[];S.closed=false;S.divs=[];S.names=[];S.locks={sides:{},angles:{}};sel=null;divDraft=null;changed();
+}
+function addDivision(a,b){
+  if(!S.closed){toast('Draw and close a plot first.');return;}
+  if(dist(a,b)<1e-9){toast('Dividing line is too short.');return;}
+  beginChange();
+  const d={id:S.nextId++,a:{x:a.x,y:a.y,att:a.att||null},b:{x:b.x,y:b.y,att:b.att||null}};
+  S.divs.push(d);
+  if(S.opts.extend){extendEnd(d,'a');extendEnd(d,'b');}
+  sel={type:'dl',id:d.id};
+  changed();
+  const inf=C.divInfo[C.divInfo.length-1];
+  if(inf&&inf.splits===0)toast('That line does not cut the plot. Make sure it crosses from boundary to boundary.');
+}
+// ---------- locks ----------
+function lockCount(){return Object.keys(S.locks.sides).length+Object.keys(S.locks.angles).length;}
+function hasLocks(){return S.closed&&lockCount()>0;}
+function dropLocks(){if(lockCount()>0){S.locks={sides:{},angles:{}};toast('Locks were cleared because the corners changed.');}}
+function lockCons(skipS,skipA){
+  const c=[];
+  Object.keys(S.locks.sides).forEach(k=>{if(+k!==skipS&&+k<S.pts.length)c.push({t:'s',i:+k,v:S.locks.sides[k]});});
+  Object.keys(S.locks.angles).forEach(k=>{if(+k!==skipA&&+k<S.pts.length)c.push({t:'a',i:+k,v:S.locks.angles[k]});});
+  return c;
+}
+function toggleLock(kind,i,on){
+  if(!S.closed)return;
+  beginChange();
+  if(kind==='s'){if(on)S.locks.sides[i]=dist(S.pts[i],S.pts[(i+1)%S.pts.length]);else delete S.locks.sides[i];}
+  else{if(on)S.locks.angles[i]=cornerAngles(S.pts)[i].interior;else delete S.locks.angles[i];}
+  changed();
+}
+function lockAll(kind){
+  if(!S.closed){toast('Close the plot first.');return;}
+  beginChange();const n=S.pts.length,an=cornerAngles(S.pts);
+  for(let i=0;i<n;i++){if(kind==='s')S.locks.sides[i]=dist(S.pts[i],S.pts[(i+1)%n]);else S.locks.angles[i]=an[i].interior;}
+  changed();
+}
+function unlockAll(){if(!lockCount())return;beginChange();S.locks={sides:{},angles:{}};changed();}
+function okShape(r){return r.ok&&isSimple(r.pts)&&signedArea(r.pts)*signedArea(S.pts)>0;}
+// try with "keep" corners (almost) fixed first, then let every corner share the adjustment
+function solveWithLocks(cons,tiers){
+  const n=S.pts.length;
+  for(let t=0;t<tiers.length;t++){
+    const w=Array(n).fill(1);tiers[t].forEach(v=>{w[(v+n)%n]=1e9;});
+    const r=solveShape(S.pts,cons,w);if(okShape(r))return {pts:r.pts,relaxed:t>0};
+  }
+  const r=solveShape(S.pts,cons,null);if(okShape(r))return {pts:r.pts,relaxed:true};
+  return null;
+}
+// drag: the corner(s) follow the pointer; locked values are restored by moving the other corners
+function dragWithLocks(targets){
+  const n=S.pts.length,P=S.pts.map(p=>({x:p.x,y:p.y})),w=Array(n).fill(1);
+  targets.forEach(t=>{P[t.i]={x:t.x,y:t.y};w[t.i]=1e4;});
+  const r=solveShape(P,lockCons(-1,-1),w);
+  return okShape(r)?r.pts:null;
+}
+const LOCK_FAIL='The locked lengths/angles do not allow that. Unlock something (see “Locks”) and try again.';
+function setEdgeLength(i,Lm,keepStart){
+  if(hasLocks()){
+    const n=S.pts.length,cur=dist(S.pts[i],S.pts[(i+1)%n]);if(cur<1e-12||!(Lm>0))return;
+    const L=Lm/scaleM(),cons=lockCons(i,-1);cons.push({t:'s',i,v:L});
+    const r=solveWithLocks(cons,keepStart?[[i,(i-1+n)%n],[i]]:[[(i+1)%n,(i+2)%n],[(i+1)%n]]);
+    if(!r){toast(LOCK_FAIL);return;}
+    beginChange();if(S.locks.sides[i]!==undefined)S.locks.sides[i]=L;S.pts=r.pts;updateAtt();changed();
+    if(r.relaxed)toast('Other corners were adjusted to keep your locked values.');
+    return;
+  }
+  const n=S.pts.length,a=S.pts[i],b=S.pts[(i+1)%n];
+  const cur=dist(a,b);if(cur<1e-12||!(Lm>0))return;
+  const L=Lm/scaleM(),np=S.pts.map(p=>({x:p.x,y:p.y}));
+  if(keepStart){const k=(i+1)%n;np[k]={x:a.x+(b.x-a.x)/cur*L,y:a.y+(b.y-a.y)/cur*L};}
+  else{np[i]={x:b.x+(a.x-b.x)/cur*L,y:b.y+(a.y-b.y)/cur*L};}
+  if(!isSimple(np)){toast('That length would make the boundary cross itself.');return;}
+  beginChange();S.pts=np;updateAtt();changed();
+}
+function calibrate(i,Lm){
+  const n=S.pts.length,l=dist(S.pts[i],S.pts[(i+1)%n]);if(l<1e-12||!(Lm>0))return;
+  const s=Lm/l;beginChange();S.gridValue=s/LEN[S.gridUnit].f;syncControls();changed();
+}
+function moveDivBy(id,offM){
+  const d=S.divs.find(q=>q.id===id);if(!d)return;
+  beginChange();moveDivPerp(d,{a:{x:d.a.x,y:d.a.y,att:d.a.att},b:{x:d.b.x,y:d.b.y,att:d.b.att}},offM/scaleM());changed();
+}
+function moveDivPerp(d,o,off){
+  const L=dist(o.a,o.b);if(L<1e-12)return;
+  const ux=(o.b.x-o.a.x)/L,uy=(o.b.y-o.a.y)/L,nx=-uy,ny=ux;
+  const idx=S.divs.indexOf(d);
+  ['a','b'].forEach(k=>{
+    const p=d[k],op=o[k],tx=op.x+nx*off,ty=op.y+ny*off;
+    p.x=tx;p.y=ty;p.att=null;
+    if(!op.att)return;
+    const O={x:tx,y:ty},ex={x:ux*(k==='a'?-1:1),y:uy*(k==='a'?-1:1)};
+    let best=null;
+    const test=(a,b,att)=>{
+      const ax=b.x-a.x,ay=b.y-a.y,den=ux*ay-uy*ax;if(Math.abs(den)<1e-14)return;
+      const t=((a.x-d.a.x-nx*off)*ay-(a.y-d.a.y-ny*off)*ax)/den,u=((a.x-d.a.x-nx*off)*uy-(a.y-d.a.y-ny*off)*ux)/den;
+      if(u<-1e-9||u>1+1e-9)return;
+      const x=o.a.x+nx*off+ux*t,y=o.a.y+ny*off+uy*t,dd=Math.hypot(x-tx,y-ty);
+      if(!best||dd<best.d)best={d:dd,x,y,att:Object.assign({},att,{u:Math.max(0,Math.min(1,u))})};
+    };
+    if(op.att.t==='b')S.pts.forEach((a,i)=>test(a,S.pts[(i+1)%S.pts.length],{t:'b',i}));
+    else for(let j=0;j<idx;j++){const h=S.divs[j];test(h.a,h.b,{t:'d',id:h.id});}
+    if(best){p.x=best.x;p.y=best.y;p.att=best.att;}
+  });
+}
+
+// ---------- view ----------
+function resizeCanvas(){
+  const w=cv.clientWidth,h=cv.clientHeight,r=window.devicePixelRatio||1;
+  if(cv.width!==Math.round(w*r)||cv.height!==Math.round(h*r)){cv.width=Math.round(w*r);cv.height=Math.round(h*r);}
+  ctx.setTransform(r,0,0,r,0,0);
+}
+function fitView(W,H,target){
+  W=W||cv.clientWidth;H=H||cv.clientHeight;
+  const v=target||view;
+  if(!S.pts.length){v.z=24;v.ox=50;v.oy=50;return v;}
+  const b=bboxOf(S.pts),m=70;
+  const z=Math.min((W-2*m)/Math.max(b.w,1e-9),(H-2*m)/Math.max(b.h,1e-9));
+  v.z=Math.max(0.05,Math.min(5000,z));
+  v.ox=(W-b.w*v.z)/2-b.x0*v.z;v.oy=(H-b.h*v.z)/2-b.y0*v.z;
+  return v;
+}
+function zoomAt(sx,sy,f){
+  const wx=(sx-view.ox)/view.z,wy=(sy-view.oy)/view.z;
+  view.z=Math.max(0.05,Math.min(5000,view.z*f));
+  view.ox=sx-wx*view.z;view.oy=sy-wy*view.z;render();
+}
+const toW=(sx,sy)=>({x:(sx-view.ox)/view.z,y:(sy-view.oy)/view.z});
+function gridStep(z){
+  const target=14/z,k=Math.floor(Math.log10(target));
+  for(const m of [1,2,5,10]){const s=m*Math.pow(10,k);if(s>=target)return s;}
+  return Math.pow(10,k+1);
+}
+function snapGrid(w,e){
+  if(!S.opts.snap||(e&&e.altKey))return {x:w.x,y:w.y};
+  const st=gridStep(view.z);return {x:Math.round(w.x/st)*st,y:Math.round(w.y/st)*st};
+}
+
+// ---------- display strings ----------
+function updateDisplay(){
+  if(!C.plot){DISP=null;return;}
+  const list=C.parcels.map(p=>p.areaM2);
+  DISP=formatAreas(S,list,C.plot.areaM2);
+}
+function refresh(){
+  C=computeAll(S);updateDisplay();
+  renderPanels();render();
+  $('act-undo').disabled=!undoStack.length;$('act-redo').disabled=!redoStack.length;
+  document.title='LandSplit – '+S.name;
+}
+
+// ---------- drawing ----------
+function niceNum(v){const k=Math.floor(Math.log10(v)),f=v/Math.pow(10,k);return (f>=5?5:f>=2?2:1)*Math.pow(10,k);}
+function parcelColor(i,a){return `hsla(${(i*67+110)%360},55%,62%,${a})`;}
+function label(c,text,x,y,rot,col,font,off){
+  c.save();c.translate(x,y);c.rotate(rot||0);c.font=font||'12px system-ui,sans-serif';c.textAlign='center';c.textBaseline='middle';
+  c.lineWidth=3.5;c.strokeStyle='rgba(255,255,255,.92)';c.lineJoin='round';c.strokeText(text,0,off||0);c.fillStyle=col||'#1d2a24';c.fillText(text,0,off||0);c.restore();
+}
+function render(){
+  resizeCanvas();
+  paint(ctx,cv.clientWidth,cv.clientHeight,view,true);
+}
+function paint(c,W,H,v,live){
+  c.save();c.fillStyle='#fff';c.fillRect(0,0,W,H);
+  const T=p=>({x:p.x*v.z+v.ox,y:p.y*v.z+v.oy});
+  // grid
+  if(S.opts.grid){
+    const st=gridStep(v.z),x0=Math.floor(-v.ox/v.z/st),x1=Math.ceil((W-v.ox)/v.z/st),y0=Math.floor(-v.oy/v.z/st),y1=Math.ceil((H-v.oy)/v.z/st);
+    if((x1-x0)<600&&(y1-y0)<600){
+      for(let i=x0;i<=x1;i++){const x=i*st*v.z+v.ox;c.strokeStyle=i%5===0?'#d9e2dc':'#edf1ee';c.lineWidth=1;c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke();}
+      for(let i=y0;i<=y1;i++){const y=i*st*v.z+v.oy;c.strokeStyle=i%5===0?'#d9e2dc':'#edf1ee';c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
+    }
+  }
+  const pathOf=(poly,close)=>{c.beginPath();poly.forEach((p,i)=>{const q=T(p);i?c.lineTo(q.x,q.y):c.moveTo(q.x,q.y);});if(close)c.closePath();};
+  const bad=C.errors.length>0||dragInvalid;
+  // parcel fills
+  if(S.closed&&S.pts.length>=3){
+    if(C.parcels.length){
+      C.parcels.forEach((p,i)=>{pathOf(p.raw,true);c.fillStyle=parcelColor(i,live&&sel&&sel.type==='parcel'&&sel.i===i?.6:.32);c.fill();});
+    }else{pathOf(S.pts,true);c.fillStyle=bad?'rgba(220,38,38,.12)':'rgba(31,111,74,.15)';c.fill();}
+  }
+  // parcel borders
+  C.parcels.forEach((p,i)=>{if(live&&sel&&sel.type==='parcel'&&sel.i===i){pathOf(p.raw,true);c.strokeStyle='#0f3d28';c.lineWidth=3;c.stroke();}});
+  // boundary
+  if(S.pts.length){
+    pathOf(S.pts,S.closed);c.strokeStyle=bad?'#dc2626':'#14532d';c.lineWidth=2.6;c.lineJoin='round';c.stroke();
+  }
+  // dividing lines
+  S.divs.forEach(d=>{
+    const a=T(d.a),b=T(d.b),isSel=live&&sel&&sel.type==='dl'&&sel.id===d.id;
+    c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.strokeStyle=isSel?'#2563eb':'#d9480f';c.lineWidth=isSel?3.5:2.4;c.stroke();
+  });
+  // selected edge highlight
+  if(live&&sel&&sel.type==='e'&&S.pts[sel.i]){
+    const a=T(S.pts[sel.i]),b=T(S.pts[(sel.i+1)%S.pts.length]);
+    c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.strokeStyle='rgba(37,99,235,.7)';c.lineWidth=6;c.stroke();
+  }
+  // parallel-line markers (closed plot; while drawing they are added with the previews)
+  if(S.opts.parallel&&S.closed&&S.pts.length>=3){
+    const lines=[];S.pts.forEach((p,i)=>lines.push({a:p,b:S.pts[(i+1)%S.pts.length]}));S.divs.forEach(d=>lines.push({a:d.a,b:d.b}));
+    drawParallel(c,T,v,lines,bboxDiag(S.pts),C.parcels.length?C.parcels.map(q=>q.labelPt):[centroid(S.pts)]);
+  }
+  // lock markers
+  if(S.closed&&lockCount()&&S.pts.length>=3){
+    const nn=S.pts.length;
+    Object.keys(S.locks.sides).forEach(k=>{const a=T(S.pts[+k]),b=T(S.pts[(+k+1)%nn]);if(a)drawLock(c,(a.x+b.x)/2,(a.y+b.y)/2);});
+    if(Object.keys(S.locks.angles).length){const an=cornerAngles(S.pts);
+      Object.keys(S.locks.angles).forEach(k=>{const q=T(S.pts[+k]),a=an[+k];if(!a)return;const m=a.a0+a.th/2;drawLock(c,q.x+Math.cos(m)*52,q.y+Math.sin(m)*52);});}
+  }
+  // corner and side names
+  if(S.pts.length&&(S.opts.cornerNames||S.opts.sideNames)){
+    const nn=S.pts.length,ok=S.closed&&nn>=3;
+    if(S.opts.cornerNames){
+      const an=ok?cornerAngles(S.pts):null;
+      S.pts.forEach((p,i)=>{
+        const q=T(p);let dx=0,dy=-1;
+        if(an){const m=an[i].a0+an[i].th/2;dx=-Math.cos(m);dy=-Math.sin(m);}
+        label(c,cornerName(i),q.x+dx*18,q.y+dy*18,0,'#0e7490','700 14px system-ui,sans-serif');
+      });
+    }
+    if(S.opts.sideNames&&ok){
+      const sa=signedArea(S.pts)>=0?1:-1;
+      for(let i=0;i<nn;i++){
+        const a=T(S.pts[i]),b=T(S.pts[(i+1)%nn]),len=Math.hypot(b.x-a.x,b.y-a.y);if(len<44)continue;
+        const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,ox=sa>0?uy:-uy,oy=sa>0?-ux:ux;
+        // keep the name clear of points where dividing lines meet this side
+        const obs=[];S.divs.forEach(d=>{obs.push(T(d.a),T(d.b));});
+        let bt=0.5,bd=-1;
+        for(const t of [0.5,0.3,0.7,0.2,0.8]){
+          const px=a.x+(b.x-a.x)*t,py=a.y+(b.y-a.y)*t;
+          const md=obs.reduce((m,q)=>Math.min(m,Math.hypot(q.x-px,q.y-py)),1e9);
+          if(md>bd){bd=md;bt=t;}
+          if(md>=44)break;
+        }
+        label(c,sideNameN(i,nn),a.x+(b.x-a.x)*bt-ox*16,a.y+(b.y-a.y)*bt-oy*16,0,'#7c3aed','700 12.5px system-ui,sans-serif');
+      }
+    }
+  }
+  // length labels
+  if(S.opts.lengths){
+    if(S.closed&&C.segs.length){
+      C.segs.forEach(sg=>{
+        const a=T(sg.a),b=T(sg.b),len=Math.hypot(b.x-a.x,b.y-a.y);
+        if(len<46)return;
+        let ang=Math.atan2(b.y-a.y,b.x-a.x),f=1;
+        if(ang>Math.PI/2||ang<-Math.PI/2){ang+=Math.PI;f=-1;}
+        const mx=(a.x+b.x)/2,my=(a.y+b.y)/2,off=sg.shared?11:13;
+        const px=mx+sg.nx*off,py=my+sg.ny*off;
+        label(c,fmtLen(S,sg.lenM),px,py,ang,sg.shared?'#9a3412':'#14532d','600 11.5px system-ui,sans-serif');
+      });
+    }else if(!S.closed&&S.pts.length>1){
+      for(let i=0;i<S.pts.length-1;i++)edgeTmpLabel(c,T,S.pts[i],S.pts[i+1]);
+    }
+  }
+  // angle labels
+  if(S.opts.angles!=='none'&&S.closed&&C.plot&&!C.errors.length){
+    const polys=C.parcels.length>1?C.parcels.map(p=>p.poly):[S.pts];
+    polys.forEach(poly=>{
+      const ang=cornerAngles(poly);
+      poly.forEach((p,i)=>{
+        const a=ang[i];if(Math.abs(a.interior-180)<0.005)return;
+        const q=T(p),mid=a.a0+a.th/2,r=13;
+        const showI=S.opts.angles==='interior'||S.opts.angles==='both',showE=S.opts.angles==='exterior'||S.opts.angles==='both';
+        if(showI){
+          c.beginPath();c.arc(q.x,q.y,r,a.a0,a.a0+a.th,false);c.strokeStyle='rgba(37,99,235,.8)';c.lineWidth=1.3;c.stroke();
+          label(c,fmtAng(a.interior),q.x+Math.cos(mid)*(r+19),q.y+Math.sin(mid)*(r+19),0,'#1d4ed8','11px system-ui,sans-serif');
+        }
+        if(showE){
+          label(c,(showI?'ext ':'')+fmtAng(a.exterior),q.x-Math.cos(mid)*(r+19),q.y-Math.sin(mid)*(r+19),0,'#7c3aed','11px system-ui,sans-serif');
+        }
+      });
+    });
+  }
+  // parcel labels
+  if(S.opts.labels&&C.parcels.length&&DISP){
+    C.parcels.forEach((p,i)=>{
+      const q=T(p.labelPt),nm=S.names[i]||('Parcel '+(i+1));
+      if(C.parcels.length===1){label(c,DISP.strs[i],q.x,q.y,0,'#0f3d28','700 13px system-ui,sans-serif');return;}
+      label(c,nm,q.x,q.y-8,0,'#0f3d28','700 13px system-ui,sans-serif');
+      label(c,DISP.strs[i],q.x,q.y+8,0,'#0f3d28','12px system-ui,sans-serif');
+    });
+  }
+  if(live){
+    // handles
+    S.pts.forEach((p,i)=>{
+      const q=T(p),isSel=sel&&sel.type==='v'&&sel.i===i;
+      c.beginPath();c.rect(q.x-5,q.y-5,10,10);c.fillStyle=isSel?'#f59e0b':'#fff';c.strokeStyle=isSel?'#b45309':'#14532d';c.lineWidth=2;c.fill();c.stroke();
+    });
+    S.divs.forEach(d=>[d.a,d.b].forEach(p=>{const q=T(p);c.beginPath();c.arc(q.x,q.y,5,0,7);c.fillStyle=p.att?'#fff':'#fde68a';c.strokeStyle='#d9480f';c.lineWidth=2;c.fill();c.stroke();}));
+    // first-point ring while drawing
+    if(tool==='draw'&&!S.closed&&S.pts.length>=3){const q=T(S.pts[0]);c.beginPath();c.arc(q.x,q.y,11,0,7);c.strokeStyle='rgba(31,111,74,.5)';c.lineWidth=2;c.stroke();}
+    // previews
+    if(tool==='draw'&&!S.closed&&S.pts.length&&mouseW){
+      const a=T(S.pts[S.pts.length-1]),b=T(mouseW);
+      c.setLineDash([6,5]);c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.strokeStyle='#14532d';c.lineWidth=1.8;c.stroke();c.setLineDash([]);
+      edgeTmpLabel(c,T,S.pts[S.pts.length-1],mouseW);
+    }
+    if(tool==='divide'&&divDraft&&mouseW){
+      const a=T(divDraft.a),b=T(mouseW);
+      c.setLineDash([6,5]);c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.strokeStyle='#d9480f';c.lineWidth=2;c.stroke();c.setLineDash([]);
+      edgeTmpLabel(c,T,divDraft.a,mouseW);
+    }
+    if(rectDraft){
+      const r=rectFrom(rectDraft);const a=T({x:r.x0,y:r.y0}),b=T({x:r.x1,y:r.y1});
+      c.setLineDash([6,5]);c.strokeStyle='#14532d';c.lineWidth=2;c.strokeRect(a.x,a.y,b.x-a.x,b.y-a.y);c.setLineDash([]);
+      if(S.opts.angles!=='none'&&Math.abs(b.x-a.x)>46&&Math.abs(b.y-a.y)>46){
+        [[a.x,a.y,1,1],[b.x,a.y,-1,1],[b.x,b.y,-1,-1],[a.x,b.y,1,-1]].forEach(k=>{
+          c.strokeStyle='#ea580c';c.lineWidth=1.6;
+          const sx=k[2]*(b.x>a.x?1:-1),sy=k[3]*(b.y>a.y?1:-1);
+          c.strokeRect(Math.min(k[0],k[0]+sx*12),Math.min(k[1],k[1]+sy*12),12,12);
+          label(c,'90°',k[0]+sx*30,k[1]+sy*20,0,'#c2410c','700 12.5px system-ui,sans-serif');
+        });
+      }
+      label(c,fmtLen(S,Math.abs(r.x1-r.x0)*scaleM())+' × '+fmtLen(S,Math.abs(r.y1-r.y0)*scaleM()),(a.x+b.x)/2,(a.y+b.y)/2,0,'#14532d','600 12px system-ui,sans-serif');
+    }
+    if(tool==='para'&&parDraft&&mouseW){
+      const pts=parDraft.pts,cur=mouseW;c.setLineDash([6,5]);c.strokeStyle='#14532d';c.lineWidth=2;
+      if(pts.length===1){
+        const a=T(pts[0]),b=T(cur);c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();c.setLineDash([]);
+        edgeTmpLabel(c,T,pts[0],cur);
+      }else{
+        const poly=parPoly(pts[0],pts[1],cur);c.beginPath();poly.forEach((p,i)=>{const q=T(p);i?c.lineTo(q.x,q.y):c.moveTo(q.x,q.y);});c.closePath();
+        c.fillStyle='rgba(31,111,74,.12)';c.fill();c.stroke();c.setLineDash([]);
+        edgeTmpLabel(c,T,pts[0],pts[1]);edgeTmpLabel(c,T,pts[1],cur);
+        openAngle(c,T,pts[1],pts[0],cur,15);
+        const D={x:pts[0].x+cur.x-pts[1].x,y:pts[0].y+cur.y-pts[1].y};openAngle(c,T,pts[0],D,pts[1],15);
+      }
+      pts.concat([cur]).forEach(p=>{const q=T(p);c.beginPath();c.arc(q.x,q.y,4,0,7);c.fillStyle='#fff';c.fill();c.strokeStyle='#14532d';c.lineWidth=1.6;c.stroke();});
+    }
+    // parallel indicators while drawing (before the plot is closed)
+    if(S.opts.parallel){
+      let ls=null,diag=1,cursor=null;
+      if(tool==='draw'&&!S.closed&&S.pts.length>=1&&mouseW){
+        const pts=S.pts.concat(dist(mouseW,S.pts[S.pts.length-1])>1e-9?[mouseW]:[]);
+        ls=[];for(let i=0;i<pts.length-1;i++)ls.push({a:pts[i],b:pts[i+1],name:nameOf(i,S.opts.nameStyle)+nameOf(i+1,S.opts.nameStyle)});
+        diag=bboxDiag(pts);cursor=pts.length>=2?pts[pts.length-1]:null;
+      }else if(tool==='para'&&parDraft&&parDraft.pts.length===2&&mouseW){
+        const poly=parPoly(parDraft.pts[0],parDraft.pts[1],mouseW);
+        ls=poly.map((q,i)=>({a:q,b:poly[(i+1)%4]}));diag=bboxDiag(poly);
+      }else if(rectDraft){
+        const r=rectFrom(rectDraft),q=makeRect(r.x0,r.y0,r.x1,r.y1);
+        if(Math.abs(r.x1-r.x0)>0&&Math.abs(r.y1-r.y0)>0){ls=q.map((p,i)=>({a:p,b:q[(i+1)%4]}));diag=bboxDiag(q);}
+      }
+      if(ls&&ls.length>=2){
+        const groups=drawParallel(c,T,v,ls,Math.max(diag,1e-9),[]);
+        if(cursor){
+          const last=ls[ls.length-1],g=groups.find(gr=>gr.lines.some(l=>l.i===ls.length-1));
+          if(g){
+            const lastL=g.lines.find(l=>l.i===ls.length-1),mates=g.lines.filter(l=>l.i!==ls.length-1&&Math.abs(l.o-lastL.o)>1e-7*Math.max(diag,1e-9)).map(l=>l.name);
+            if(mates.length){const q=T(cursor);label(c,'∥ '+mates.join(', '),q.x+16,q.y+24,0,'#0f766e','700 12.5px system-ui,sans-serif');}
+          }
+        }
+      }
+    }
+    drawingAngles(c,T);
+    if(!S.pts.length&&!rectDraft&&!parDraft){label(c,'Pick “Boundary”, “Rectangle”, “Square” or “Parallelogram” on the toolbar and start drawing',W/2,H/2,0,'#8a9a92','14px system-ui,sans-serif');}
+  }
+  // scale bar
+  const mPerPx=scaleM()/v.z,val=100*mPerPx/LEN[S.lenUnit].f,nice=niceNum(val),px=nice*LEN[S.lenUnit].f/mPerPx;
+  c.strokeStyle='#1d2a24';c.lineWidth=2;c.beginPath();c.moveTo(16,H-14);c.lineTo(16+px,H-14);c.moveTo(16,H-19);c.lineTo(16,H-9);c.moveTo(16+px,H-19);c.lineTo(16+px,H-9);c.stroke();
+  label(c,nice+' '+LEN[S.lenUnit].l,16+px/2,H-26,0,'#1d2a24','600 11px system-ui,sans-serif');
+  c.restore();
+}
+function drawParallel(c,T,v,lines,diag,labelPts){
+    const groups=parallelInfo(lines,0.05,diag);
+    const col='#0f766e',tp=(g,t,o)=>T({x:g.ux*t+g.nx*o,y:g.uy*t+g.ny*o});
+    groups.forEach((g,gi)=>{
+      const k=gi%3+1;
+      const chevron=(P,n)=>{const ux=g.ux,uy=g.uy,vx=-uy,vy=ux;c.strokeStyle=col;c.lineWidth=1.8;c.lineCap='round';
+        for(let m=0;m<n;m++){const o=(m-(n-1)/2)*6,cx=P.x+ux*o,cy=P.y+uy*o;
+          c.beginPath();c.moveTo(cx-ux*3+vx*4.5,cy-uy*3+vy*4.5);c.lineTo(cx+ux*3,cy+uy*3);c.lineTo(cx-ux*3-vx*4.5,cy-uy*3-vy*4.5);c.stroke();}};
+      g.pairs.forEach(pr=>{
+        const len=(pr.t1-pr.t0)*v.z;if(len<30)return;
+        // pick the spot along the pair that stays furthest from the parcel labels
+        const lab=labelPts.map(q=>T(q));
+        let best=null;
+        (len>150?[0.25,0.75,0.5,0.12,0.88]:[0.5]).forEach(f=>{
+          const t=pr.t0+(pr.t1-pr.t0)*f,a1=tp(g,t,pr.a.o),b1=tp(g,t,pr.b.o),gap=Math.hypot(a1.x-b1.x,a1.y-b1.y);
+          (gap>90?[0.5,0.25,0.75]:[0.5]).forEach(fc=>{
+            const m={x:a1.x+(b1.x-a1.x)*fc,y:a1.y+(b1.y-a1.y)*fc};
+            const sc=lab.reduce((mn,q)=>Math.min(mn,Math.hypot(q.x-m.x,q.y-m.y)),1e9);
+            if(!best||(best.sc<44&&sc>best.sc+1))best={sc,A:a1,B:b1,m};
+          });
+        });
+        const A=best.A,B=best.B,px=Math.hypot(A.x-B.x,A.y-B.y);
+        // dotted connector across the gap
+        c.save();c.setLineDash([2,4]);c.strokeStyle='rgba(15,118,110,.6)';c.lineWidth=1.2;c.beginPath();c.moveTo(A.x,A.y);c.lineTo(B.x,B.y);c.stroke();c.restore();
+        if(px>=28){
+          const mx=best.m.x,my=best.m.y;
+          c.save();c.beginPath();c.arc(mx,my,11,0,7);c.fillStyle='#fff';c.fill();c.strokeStyle=col;c.lineWidth=1.4;c.stroke();
+          c.lineWidth=2;c.lineCap='round';
+          [-3.2,3.2].forEach(o=>{c.beginPath();c.moveTo(mx+o,my-5);c.lineTo(mx+o,my+5);c.stroke();});c.restore();
+          if(S.opts.parallelDist)label(c,fmtLen(S,pr.dist*scaleM()),mx+g.ux*38,my+g.uy*38,0,col,'600 11.5px system-ui,sans-serif');
+        }
+      });
+      // matching arrow marks, placed at the same position along every line of the group
+      g.lines.forEach(l=>{if((l.t1-l.t0)*v.z<60)return;
+        const t=l.t0+(l.t1-l.t0)*0.3,tm=(l.t0+l.t1)/2,Mx=(l.a.x+l.b.x)/2,My=(l.a.y+l.b.y)/2;
+        chevron(T({x:Mx+g.ux*(t-tm),y:My+g.uy*(t-tm)}),k);});
+    });
+    return groups;
+}
+function drawLock(c,x,y){
+  c.save();c.beginPath();c.arc(x,y,9,0,7);c.fillStyle='#fff';c.fill();c.strokeStyle='#b45309';c.lineWidth=1.4;c.stroke();
+  c.fillStyle='#b45309';c.fillRect(x-4,y-1,8,6);
+  c.beginPath();c.arc(x,y-1,3,Math.PI,0);c.lineWidth=1.6;c.stroke();c.restore();
+}
+function nameOf(i,style){
+  if(style==='numbers')return String(i+1);
+  let n=i,t='';do{t=String.fromCharCode(65+n%26)+t;n=Math.floor(n/26)-1;}while(n>=0);return t;
+}
+function cornerName(i){return nameOf(i,S.opts.nameStyle);}
+function sideNameN(i,n){
+  const a=nameOf(i,S.opts.nameStyle),b=nameOf((i+1)%n,S.opts.nameStyle);
+  return S.opts.nameStyle==='letters'&&a.length===1&&b.length===1?a+b:a+'–'+b;
+}
+function sideName(i){return sideNameN(i,S.pts.length);}
+function edgeTmpLabel(c,T,p,q){
+  const a=T(p),b=T(q),len=Math.hypot(b.x-a.x,b.y-a.y);if(len<30)return;
+  let ang=Math.atan2(b.y-a.y,b.x-a.x);if(ang>Math.PI/2||ang<-Math.PI/2)ang+=Math.PI;
+  label(c,fmtLen(S,dist(p,q)*scaleM()),(a.x+b.x)/2,(a.y+b.y)/2,ang,'#14532d','600 11.5px system-ui,sans-serif',-11);
+}
+// Live angle between two lines meeting at p (used while drawing, before the plot is closed)
+function openAngle(c,T,p,a,b,r){
+  const P0=T(p),A=T(a),B=T(b);
+  const vax=A.x-P0.x,vay=A.y-P0.y,vbx=B.x-P0.x,vby=B.y-P0.y;
+  if(Math.hypot(vax,vay)<16||Math.hypot(vbx,vby)<16)return;
+  const a0=Math.atan2(vay,vax);let df=Math.atan2(vby,vbx)-a0;
+  while(df>Math.PI)df-=2*Math.PI;while(df<=-Math.PI)df+=2*Math.PI;
+  const deg=Math.atan2(Math.abs((a.x-p.x)*(b.y-p.y)-(a.y-p.y)*(b.x-p.x)),(a.x-p.x)*(b.x-p.x)+(a.y-p.y)*(b.y-p.y))*180/Math.PI;
+  c.beginPath();c.arc(P0.x,P0.y,r,a0,a0+df,df<0);c.strokeStyle='#ea580c';c.lineWidth=1.8;c.stroke();
+  const mid=a0+df/2;
+  label(c,fmtAng(deg),P0.x+Math.cos(mid)*(r+22),P0.y+Math.sin(mid)*(r+22),0,'#c2410c','700 12.5px system-ui,sans-serif');
+}
+function drawingAngles(c,T){
+  if(S.opts.angles==='none'||tool!=='draw'||S.closed)return;
+  const n=S.pts.length;if(n<2)return;
+  for(let i=1;i<n-1;i++)openAngle(c,T,S.pts[i],S.pts[i-1],S.pts[i+1],15);
+  if(mouseW&&dist(mouseW,S.pts[n-1])>1e-9){
+    openAngle(c,T,S.pts[n-1],S.pts[n-2],mouseW,15);
+    if(n>=3&&dist(mouseW,S.pts[0])<1e-9)openAngle(c,T,S.pts[0],S.pts[n-1],S.pts[1],15);
+  }
+}
+function rectFrom(r,square){
+  let x1=r.b.x,y1=r.b.y;
+  if(r.square){const d=Math.max(Math.abs(x1-r.a.x),Math.abs(y1-r.a.y));x1=r.a.x+(x1>=r.a.x?d:-d);y1=r.a.y+(y1>=r.a.y?d:-d);}
+  return {x0:r.a.x,y0:r.a.y,x1,y1};
+}
+
+// ---------- hit testing ----------
+function sp(w){return {x:w.x*view.z+view.ox,y:w.y*view.z+view.oy};}
+function hitDivEnd(s,r){let best=null;S.divs.forEach(d=>['a','b'].forEach(k=>{const q=sp(d[k]),dd=Math.hypot(q.x-s.x,q.y-s.y);if(dd<=r&&(!best||dd<best.d))best={d:dd,id:d.id,k};}));return best;}
+function hitVertex(s,r){let best=null;S.pts.forEach((p,i)=>{const q=sp(p),dd=Math.hypot(q.x-s.x,q.y-s.y);if(dd<=r&&(!best||dd<best.d))best={d:dd,i};});return best;}
+function hitDiv(s,r){let best=null;S.divs.forEach(d=>{const a=sp(d.a),b=sp(d.b),h=distPtSeg(s,a,b);if(h.d<=r&&(!best||h.d<best.d))best={d:h.d,id:d.id};});return best;}
+function hitEdge(s,r){
+  let best=null;const n=S.pts.length,m=S.closed?n:n-1;
+  for(let i=0;i<m;i++){const a=sp(S.pts[i]),b=sp(S.pts[(i+1)%n]),h=distPtSeg(s,a,b);if(h.d<=r&&(!best||h.d<best.d))best={d:h.d,i,u:h.u,w:toW(h.x,h.y)};}
+  return best;
+}
+function hitParcel(w){for(let i=C.parcels.length-1;i>=0;i--)if(pip(w,C.parcels[i].raw,0)!==0)return i;return -1;}
+
+// ---------- pointer interaction ----------
+function ev(e){const r=cv.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};}
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+cv.addEventListener('wheel',e=>{e.preventDefault();const p=ev(e);zoomAt(p.x,p.y,e.deltaY<0?1.15:1/1.15);},{passive:false});
+cv.addEventListener('dblclick',e=>{if(tool==='draw'&&!S.closed)finishDraw();});
+cv.addEventListener('pointerdown',e=>{
+  cv.setPointerCapture(e.pointerId);
+  const s=ev(e);pointers.set(e.pointerId,s);
+  if(pointers.size===2){
+    cancelDrag();
+    const [p1,p2]=[...pointers.values()];
+    pinch={d:Math.hypot(p1.x-p2.x,p1.y-p2.y),cx:(p1.x+p2.x)/2,cy:(p1.y+p2.y)/2,v:{...view}};
+    return;
+  }
+  if(pointers.size>2)return;
+  const w=toW(s.x,s.y),touch=e.pointerType==='touch',hr=touch?18:11;
+  const panNow=e.button===1||e.button===2||spaceDown||tool==='pan';
+  drag={s0:s,moved:false,w0:w,snap0:snap(),e0:e};
+  if(panNow){drag.type='pan';drag.o={ox:view.ox,oy:view.oy};cv.style.cursor='grabbing';return;}
+  const T0=tool;
+  if(T0==='select'||T0==='move'){
+    const de=hitDivEnd(s,hr);
+    if(de){sel={type:'de',id:de.id,k:de.k};drag.type='de';drag.id=de.id;drag.k=de.k;refreshSel();return;}
+    const hv=S.closed||S.pts.length?hitVertex(s,hr):null;
+    if(hv){sel={type:'v',i:hv.i};drag.type='v';drag.i=hv.i;refreshSel();return;}
+    if(T0==='select'){
+      const hd=hitDiv(s,touch?14:8);if(hd){sel={type:'dl',id:hd.id};drag.type='none';refreshSel();return;}
+      const he=hitEdge(s,touch?14:8);if(he&&S.closed){sel={type:'e',i:he.i};drag.type='none';refreshSel();return;}
+      const hp=hitParcel(w);if(hp>=0){sel={type:'parcel',i:hp};drag.type='none';refreshSel();return;}
+      if(sel){sel=null;refreshSel();}
+    }
+    drag.type='pan';drag.o={ox:view.ox,oy:view.oy};return;
+  }
+  if(T0==='moveline'){
+    const hd=hitDiv(s,touch?14:8);
+    if(hd){const d=S.divs.find(q=>q.id===hd.id);sel={type:'dl',id:d.id};drag.type='dl';drag.id=d.id;drag.o={a:{...d.a},b:{...d.b}};refreshSel();return;}
+    const he=hitEdge(s,touch?14:8);
+    if(he&&S.closed){sel={type:'e',i:he.i};drag.type='e';drag.i=he.i;drag.o=S.pts.map(p=>({x:p.x,y:p.y}));refreshSel();return;}
+    drag.type='pan';drag.o={ox:view.ox,oy:view.oy};return;
+  }
+  if(T0==='rect'||T0==='square'){
+    if(!confirmReplace()){drag=null;return;}
+    const a=snapGrid(w,e);rectDraft={a,b:a,square:T0==='square'};drag.type='rect';return;
+  }
+  if(T0==='para'){
+    if(!parDraft){parDraft={pts:[snapGrid(w,e)]};drag.fresh=true;}
+    drag.type='para';parHint();return;
+  }
+  if(T0==='divide'){
+    if(!S.closed){toast('Draw and close a plot first.');drag=null;return;}
+    if(divDraft){const b=divPoint(w,e);const a=divDraft.a;divDraft=null;drag.type='none';addDivision(a,b);return;}
+    divDraft={a:divPoint(w,e)};drag.type='divstart';return;
+  }
+  drag.type='click';
+});
+function parHint(){
+  if(!parDraft)return;
+  $('hint').textContent=parDraft.pts.length<2?'Parallelogram: now click (or drag to) the end of the first side.':'Parallelogram: click the third point. It sets the slant and the second side; the fourth corner is calculated. Esc cancels.';
+}
+function parPoly(A,B,C){
+  const D={x:A.x+C.x-B.x,y:A.y+C.y-B.y};
+  const poly=[A,B,C,D];
+  return signedArea(poly)<0?[A,D,C,B]:poly;
+}
+function finishPara(){
+  const [A,B,C]=parDraft.pts,cr=(B.x-A.x)*(C.y-B.y)-(B.y-A.y)*(C.x-B.x);
+  if(Math.abs(cr)<1e-9*Math.max(1,dist(A,B)*dist(B,C))){toast('Those three points are in a straight line. Click a point off the line.');parDraft.pts.pop();parHint();render();return;}
+  if(!confirmReplace()){parDraft=null;setTool('para');return;}
+  const poly=parPoly(A,B,C).map(p=>({x:p.x,y:p.y}));
+  parDraft=null;beginChange();replaceWithPlot(poly);changed();setTool('select');
+  toast('Parallelogram created. Opposite sides are parallel and equal.');
+}
+function divPoint(w,e){
+  const h=findHost(w,S.divs.length,(e&&e.pointerType==='touch'?18:12)/view.z);
+  if(h)return {x:h.x,y:h.y,att:h.att};
+  const g=snapGrid(w,e);return {x:g.x,y:g.y,att:null};
+}
+function cancelDrag(){if(drag&&drag.snap0&&drag.type&&drag.type!=='pan'){try{restore(drag.snap0);}catch(x){}updateAtt();}drag=null;rectDraft=null;dragInvalid=false;refresh();}
+cv.addEventListener('pointermove',e=>{
+  const s=ev(e);
+  if(pointers.has(e.pointerId))pointers.set(e.pointerId,s);
+  if(pinch&&pointers.size===2){
+    const [p1,p2]=[...pointers.values()],d=Math.hypot(p1.x-p2.x,p1.y-p2.y),cx=(p1.x+p2.x)/2,cy=(p1.y+p2.y)/2;
+    const wx=(pinch.cx-pinch.v.ox)/pinch.v.z,wy=(pinch.cy-pinch.v.oy)/pinch.v.z;
+    view.z=Math.max(0.05,Math.min(5000,pinch.v.z*d/Math.max(pinch.d,1)));view.ox=cx-wx*view.z;view.oy=cy-wy*view.z;render();return;
+  }
+  const w=toW(s.x,s.y);mouseW=snapGrid(w,e);
+  if(tool==='draw'&&S.pts.length>=3&&!S.closed){const q=sp(S.pts[0]);if(Math.hypot(q.x-s.x,q.y-s.y)<12)mouseW={x:S.pts[0].x,y:S.pts[0].y};}
+  if(!drag){render();return;}
+  if(Math.hypot(s.x-drag.s0.x,s.y-drag.s0.y)>4)drag.moved=true;
+  switch(drag.type){
+    case 'pan':view.ox=drag.o.ox+s.x-drag.s0.x;view.oy=drag.o.oy+s.y-drag.s0.y;break;
+    case 'v':{
+      if(!drag.moved)break;
+      if(hasLocks()){
+        const np=dragWithLocks([{i:drag.i,x:w.x,y:w.y}]);
+        if(np){S.pts=np;updateAtt();}else drag.blocked=true;
+        dragInvalid=false;C=computeAll(S);updateDisplay();renderPanelsLight();break;
+      }
+      const g=snapGrid(w,e);S.pts[drag.i]={x:g.x,y:g.y};updateAtt();
+      dragInvalid=S.closed?!isSimple(S.pts):false;C=computeAll(S);updateDisplay();renderPanelsLight();break;
+    }
+    case 'e':{
+      if(!drag.moved)break;
+      let dx=w.x-drag.w0.x,dy=w.y-drag.w0.y;
+      if(hasLocks()){
+        const n0=S.pts.length,i0=drag.i,j0=(i0+1)%n0;
+        const np=dragWithLocks([{i:i0,x:drag.o[i0].x+dx,y:drag.o[i0].y+dy},{i:j0,x:drag.o[j0].x+dx,y:drag.o[j0].y+dy}]);
+        if(np){S.pts=np;updateAtt();}else drag.blocked=true;
+        dragInvalid=false;C=computeAll(S);updateDisplay();renderPanelsLight();break;
+      }
+      if(S.opts.snap&&!e.altKey){const st=gridStep(view.z);dx=Math.round(dx/st)*st;dy=Math.round(dy/st)*st;}
+      const n=S.pts.length,i=drag.i,j=(i+1)%n;
+      S.pts=drag.o.map(p=>({x:p.x,y:p.y}));
+      S.pts[i]={x:drag.o[i].x+dx,y:drag.o[i].y+dy};S.pts[j]={x:drag.o[j].x+dx,y:drag.o[j].y+dy};
+      updateAtt();dragInvalid=!isSimple(S.pts);C=computeAll(S);updateDisplay();renderPanelsLight();break;
+    }
+    case 'de':{
+      if(!drag.moved)break;
+      const d=S.divs.find(q=>q.id===drag.id);if(!d)break;
+      const p=d[drag.k],h=findHost(w,S.divs.indexOf(d),12/view.z);
+      if(h){p.x=h.x;p.y=h.y;p.att=h.att;}else{const g=snapGrid(w,e);p.x=g.x;p.y=g.y;p.att=null;}
+      updateAtt();C=computeAll(S);updateDisplay();renderPanelsLight();break;
+    }
+    case 'dl':{
+      if(!drag.moved)break;
+      const d=S.divs.find(q=>q.id===drag.id);if(!d)break;
+      const o=drag.o,L=dist(o.a,o.b),nx=-(o.b.y-o.a.y)/L,ny=(o.b.x-o.a.x)/L;
+      let off=(w.x-drag.w0.x)*nx+(w.y-drag.w0.y)*ny;
+      if(S.opts.snap&&!e.altKey){const st=gridStep(view.z);off=Math.round(off/st)*st;}
+      moveDivPerp(d,o,off);updateAtt();C=computeAll(S);updateDisplay();renderPanelsLight();break;
+    }
+    case 'rect':rectDraft.b=snapGrid(w,e);break;
+  }
+  render();
+});
+function endPointer(e){
+  const s=ev(e);pointers.delete(e.pointerId);
+  if(pinch){if(pointers.size<2)pinch=null;if(!pointers.size)drag=null;return;}
+  if(!drag)return;
+  const d=drag;drag=null;
+  cv.style.cursor=tool==='pan'?'grab':(tool==='select'||tool==='move'||tool==='moveline'?'default':'crosshair');
+  const w=toW(s.x,s.y);
+  if(e.type==='pointercancel'){if(d.type!=='pan'){restore(d.snap0);updateAtt();}rectDraft=null;dragInvalid=false;refresh();return;}
+  switch(d.type){
+    case 'v':case 'e':{
+      if(d.blocked)toast('The locked lengths/angles do not allow the shape to move that way.');
+      if(!d.moved){refresh();break;}
+      if(S.closed&&!isSimple(S.pts)){restore(d.snap0);updateAtt();dragInvalid=false;toast('Move rejected: the boundary would cross itself.');refresh();break;}
+      dragInvalid=false;pushUndoIfChanged(d.snap0);refresh();break;
+    }
+    case 'de':case 'dl':{
+      if(d.moved&&d.type==='de'&&S.opts.extend){const dv=S.divs.find(q=>q.id===d.id);if(dv)extendEnd(dv,d.k);}
+      pushUndoIfChanged(d.snap0);refresh();break;
+    }
+    case 'rect':{
+      const r=rectFrom(rectDraft);rectDraft=null;
+      if(Math.abs(r.x1-r.x0)*view.z<6||Math.abs(r.y1-r.y0)*view.z<6){toast('Drag to size the shape.');render();break;}
+      beginChange();replaceWithPlot(makeRect(r.x0,r.y0,r.x1,r.y1));
+      if(S.pts.length&&signedArea(S.pts)<0)S.pts.reverse();
+      changed();setTool('select');break;
+    }
+    case 'para':{
+      if(!parDraft)break;
+      const g=snapGrid(w,e),pts=parDraft.pts,last=pts[pts.length-1],far=dist(g,last)*view.z>6;
+      if(d.fresh){if(d.moved&&far)pts.push(g);}
+      else if(far)pts.push(g);else toast('Click a point away from the last one.');
+      if(pts.length===3)finishPara();else{parHint();render();}
+      break;
+    }
+    case 'divstart':{
+      if(d.moved){const a=divDraft.a,b=divPoint(w,e);divDraft=null;addDivision(a,b);}
+      else{$('hint').textContent='Now click the end point of the dividing line (or press Esc to cancel).';render();}
+      break;
+    }
+    case 'click':clickTool(d,w,s,e);break;
+    case 'pan':render();break;
+    default:refresh();
+  }
+}
+cv.addEventListener('pointerup',endPointer);
+cv.addEventListener('pointercancel',endPointer);
+function clickTool(d,w,s,e){
+  if(d.moved)return;
+  const touch=e.pointerType==='touch';
+  if(tool==='draw'){
+    if(!confirmReplaceDrawing())return;
+    const n=S.pts.length;
+    if(n>=3){const q=sp(S.pts[0]);if(Math.hypot(q.x-s.x,q.y-s.y)<(touch?18:12)){finishDraw();return;}}
+    const g=snapGrid(w,e);
+    if(n&&dist(S.pts[n-1],g)<1e-9)return;
+    if(n>=2){
+      const cand=S.pts.concat([g]);
+      const last=cand[n],prev=cand[n-1];
+      for(let i=0;i<n-2;i++)if(segInter(S.pts[i],S.pts[i+1],prev,last)){toast('That line would cross an existing boundary line.');return;}
+      if(Math.abs(orient(S.pts[n-2],prev,last))<1e-12*dist(S.pts[n-2],prev)*dist(prev,last)&&((prev.x-S.pts[n-2].x)*(last.x-prev.x)+(prev.y-S.pts[n-2].y)*(last.y-prev.y))<0){toast('That would fold the boundary back on itself.');return;}
+    }
+    beginChange();S.pts.push({x:g.x,y:g.y});sel=null;changed();
+  }else if(tool==='add'){
+    if(!S.closed){toast('Close the plot first.');return;}
+    const he=hitEdge(s,touch?18:12);
+    if(!he){toast('Click on a side of the plot to add a corner.');return;}
+    beginChange();dropLocks();freezeAtt();S.pts.splice(he.i+1,0,{x:he.w.x,y:he.w.y});autoAttach();sel={type:'v',i:he.i+1};changed();
+  }else if(tool==='lock'){
+    if(!S.closed){toast('Close the plot first, then click a side or a corner to lock it.');return;}
+    const n=S.pts.length,R=touch?20:14;let an=null;
+    const near=(x,y,r)=>Math.hypot(x-s.x,y-s.y)<=r;
+    let ci=-1;
+    // 1) an angle label / lock marker, 2) a corner, 3) a side
+    an=cornerAngles(S.pts);
+    for(let i=0;i<n&&ci<0;i++){
+      const q=sp(S.pts[i]),m=an[i].a0+an[i].th/2;
+      if(near(q.x+Math.cos(m)*52,q.y+Math.sin(m)*52,13)&&S.locks.angles[i]!==undefined)ci=i;
+      else if(S.opts.angles!=='none'&&near(q.x+Math.cos(m)*32,q.y+Math.sin(m)*32,R))ci=i;
+    }
+    if(ci<0){const hv=hitVertex(s,touch?20:13);if(hv)ci=hv.i;}
+    if(ci>=0){
+      const on=S.locks.angles[ci]===undefined;sel={type:'v',i:ci};toggleLock('a',ci,on);
+      toast('Angle at corner '+cornerName(ci)+(on?' locked 🔒 – '+fmtAng(S.locks.angles[ci]):' unlocked'));return;
+    }
+    const he=hitEdge(s,touch?20:12);
+    if(he){
+      const on=S.locks.sides[he.i]===undefined;sel={type:'e',i:he.i};toggleLock('s',he.i,on);
+      toast('Side '+sideName(he.i)+(on?' locked 🔒 – '+fmtLen(S,S.locks.sides[he.i]*scaleM()):' unlocked'));return;
+    }
+    toast('Click on a side to lock its length, or on a corner to lock its angle.');
+  }else if(tool==='del'){
+    const hv=hitVertex(s,touch?18:11),hd=hitDiv(s,touch?16:9),de=hitDivEnd(s,touch?18:11);
+    if(de&&!hv){deleteDiv(de.id);return;}
+    if(hv){deletePoint(hv.i);return;}
+    if(hd){deleteDiv(hd.id);return;}
+    const he=hitEdge(s,touch?16:9);if(he&&S.closed){collapseEdge(he.i);return;}
+  }
+}
+function confirmReplaceDrawing(){
+  if(S.closed&&S.pts.length){
+    if(!confirm('This replaces the current plot and its dividing lines with a new drawing. Continue? (You can undo.)'))return false;
+    beginChange();S.pts=[];S.closed=false;S.divs=[];S.names=[];S.locks={sides:{},angles:{}};sel=null;changed();
+  }
+  return true;
+}
+function finishDraw(){
+  const n=S.pts.length;
+  if(n<3){toast('Place at least 3 corners before closing.');return;}
+  for(let i=1;i<n-2;i++)if(segInter(S.pts[i],S.pts[i+1],S.pts[n-1],S.pts[0])){toast('Closing would make the boundary cross itself. Adjust the last point.');return;}
+  if(!isSimple(S.pts)){toast('Those points make a crossing boundary. Press Backspace and try again.');return;}
+  beginChange();
+  if(signedArea(S.pts)<0)S.pts.reverse();
+  S.closed=true;sel=null;changed();setTool('select');
+  toast('Plot closed. Use “Divide” to split it into parcels.');
+}
+function refreshSel(){renderSelPanel();render();}
+
+// ---------- keyboard ----------
+window.addEventListener('keydown',e=>{
+  const tg=e.target.tagName;if(tg==='INPUT'||tg==='SELECT'||tg==='TEXTAREA')return;
+  if(e.code==='Space'){spaceDown=true;cv.style.cursor='grab';e.preventDefault();return;}
+  const k=e.key.toLowerCase();
+  if((e.ctrlKey||e.metaKey)&&k==='z'){e.preventDefault();e.shiftKey?redo():undo();return;}
+  if((e.ctrlKey||e.metaKey)&&k==='y'){e.preventDefault();redo();return;}
+  if((e.ctrlKey||e.metaKey)&&k==='s'){e.preventDefault();saveProject(false);return;}
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  const map={v:'select',b:'draw',p:'para',a:'add',m:'move',l:'moveline',k:'lock',d:'divide',x:'del'};
+  if(map[k]){setTool(map[k]);return;}
+  if(k==='escape'){
+    if(parDraft){parDraft=null;setTool(tool);}
+    else if(divDraft){divDraft=null;setTool(tool);}
+    else if(rectDraft){rectDraft=null;drag=null;render();}
+    else if(tool==='draw'&&!S.closed&&S.pts.length){beginChange();S.pts=[];changed();}
+    else{sel=null;refreshSel();}
+  }else if(k==='enter'&&tool==='draw'&&!S.closed){finishDraw();}
+  else if(k==='backspace'&&tool==='draw'&&!S.closed&&S.pts.length){e.preventDefault();beginChange();S.pts.pop();changed();}
+  else if(k==='delete'||k==='backspace'){
+    if(sel&&sel.type==='v')deletePoint(sel.i);
+    else if(sel&&(sel.type==='dl'||sel.type==='de'))deleteDiv(sel.id);
+    else if(sel&&sel.type==='e')collapseEdge(sel.i);
+  }
+});
+window.addEventListener('keyup',e=>{if(e.code==='Space'){spaceDown=false;setTool(tool);}});
+
+// ---------- panels ----------
+function renderLocks(){
+  const el=$('lockPanel'),ns=Object.keys(S.locks.sides).length,na=Object.keys(S.locks.angles).length;
+  if(!S.closed){el.innerHTML='<div class="mut">Close a plot first. Then you can lock side lengths and corner angles.</div>';return;}
+  const dof=2*S.pts.length-3;
+  el.innerHTML=`<div class="mut">A locked 🔒 length or angle stays fixed while you drag corners or change other values – the unlocked sides and angles stretch to fit. Select a side or corner to lock just that one.</div>
+  <div class="kv" style="margin:6px 0"><span>Locked sides</span><b>${ns} of ${S.pts.length}</b><span>Locked angles</span><b>${na} of ${S.pts.length}</b></div>
+  <div class="row"><button class="btn sm" id="lkS">Lock all sides</button><button class="btn sm" id="lkA">Lock all angles</button><button class="btn sm" id="lkN"${ns+na?'':' disabled'}>Unlock all</button></div>
+  ${ns+na>=dof?`<div class="msg w">${ns+na} locks are about as many as this ${S.pts.length}-sided shape can satisfy (${dof}), so it may be impossible to change any further. Unlock something to edit it.</div>`:''}`;
+  $('lkS').onclick=()=>lockAll('s');$('lkA').onclick=()=>lockAll('a');$('lkN').onclick=unlockAll;
+}
+function renderPanels(){renderSelPanel();renderLocks();renderSummary();renderParcels();}
+function renderPanelsLight(){renderSummary();}
+function inUnit(m){return +(m/LEN[S.lenUnit].f).toFixed(6);}
+function renderSelPanel(){
+  const el=$('selPanel'),U=LEN[S.lenUnit].l;
+  if(!sel){el.innerHTML='<div class="mut">Nothing selected. Use the Select tool and click a corner, side, dividing line or parcel.</div>';return;}
+  const s=scaleM();
+  if(sel.type==='v'&&S.pts[sel.i]){
+    const p=S.pts[sel.i],an=C.plot&&C.plot.angles[sel.i];
+    el.innerHTML=`<b>Corner ${cornerName(sel.i)}</b>${an?` <span class="mut">interior ${fmtAng(an.interior)} · exterior ${fmtAng(an.exterior)}</span>`:''}
+    <div class="row"><label>X (${U})</label><input type="number" step="any" id="vx" value="${inUnit(p.x*s)}"><label style="min-width:0">Y (${U})</label><input type="number" step="any" id="vy" value="${inUnit(p.y*s)}"></div>
+    ${an&&S.closed?`<div class="row"><label>Interior angle</label><input type="number" step="any" min="0.01" max="359.99" id="vA" value="${+an.interior.toFixed(4)}"><span>°</span><button class="btn sm" id="vAGo">Set</button></div><div class="mut">Rotates the next side around this corner. Side lengths stay the same.</div>`:''}
+    ${an&&S.closed?`<div class="chk"><input type="checkbox" id="vLock" ${S.locks.angles[sel.i]!==undefined?'checked':''}><label for="vLock">🔒 Lock this angle (keeps it while other things change)</label></div>`:''}
+    <div class="row"><button class="btn sm dng" id="vDel">Delete corner</button></div>`;
+    if($('vLock'))$('vLock').onchange=()=>toggleLock('a',sel.i,$('vLock').checked);
+    if($('vAGo'))$('vAGo').onclick=()=>{const v=parseFloat($('vA').value);if(v>0&&v<360)setCornerAngle(sel.i,v);else toast('Enter an angle between 0 and 360.');};
+    const apply=()=>{const x=parseFloat($('vx').value),y=parseFloat($('vy').value);if(isNaN(x)||isNaN(y))return;
+      const np=S.pts.map(q=>({x:q.x,y:q.y}));np[sel.i]={x:x*LEN[S.lenUnit].f/s,y:y*LEN[S.lenUnit].f/s};
+      if(hasLocks()){
+        const r2=dragWithLocks([{i:sel.i,x:np[sel.i].x,y:np[sel.i].y}]);
+        if(!r2){toast(LOCK_FAIL);renderSelPanel();return;}
+        beginChange();S.pts=r2;updateAtt();changed();return;
+      }
+      if(S.closed&&!isSimple(np)){toast('That position would make the boundary cross itself.');renderSelPanel();return;}
+      beginChange();S.pts=np;updateAtt();changed();};
+    $('vx').onchange=apply;$('vy').onchange=apply;$('vDel').onclick=()=>deletePoint(sel.i);
+  }else if(sel.type==='e'&&S.pts[sel.i]){
+    const n=S.pts.length,a=S.pts[sel.i],b=S.pts[(sel.i+1)%n],Lm=dist(a,b)*s;
+    el.innerHTML=`<b>Side ${sideName(sel.i)}</b> <span class="mut">${fmtLen(S,Lm)}</span>
+    <div class="row"><label>Actual length</label><input type="number" id="eL" step="any" min="0" value="${inUnit(Lm)}"><span>${U}</span></div>
+    <div class="chk"><input type="checkbox" id="eLock" ${S.locks.sides[sel.i]!==undefined?'checked':''}><label for="eLock">🔒 Lock this length (keeps it while other things change)</label></div>
+    <div class="row"><button class="btn sm" id="eEnd" title="Keep corner ${cornerName(sel.i)} fixed and move corner ${cornerName((sel.i+1)%n)}">Set – move end corner</button><button class="btn sm" id="eStart">Set – move start corner</button></div>
+    <div class="row"><button class="btn sm" id="eScale" title="Rescale the whole drawing so this side has this length">Use as scale reference</button><button class="btn sm dng" id="eDel">Collapse side</button></div>
+    <div class="mut">“Set” reshapes the plot to that length. “Scale reference” keeps the shape and changes the drawing scale instead.</div>`;
+    const getL=()=>{const v=parseFloat($('eL').value);return v>0?v*LEN[S.lenUnit].f:null;};
+    $('eLock').onchange=()=>toggleLock('s',sel.i,$('eLock').checked);
+    $('eEnd').onclick=()=>{const L=getL();L&&setEdgeLength(sel.i,L,true);};
+    $('eStart').onclick=()=>{const L=getL();L&&setEdgeLength(sel.i,L,false);};
+    $('eScale').onclick=()=>{const L=getL();L&&calibrate(sel.i,L);};
+    $('eDel').onclick=()=>collapseEdge(sel.i);
+  }else if((sel.type==='dl'||sel.type==='de')&&S.divs.find(q=>q.id===sel.id)){
+    const d=S.divs.find(q=>q.id===sel.id),k=S.divs.indexOf(d);
+    const st=p=>p.att?(p.att.t==='b'?'on boundary':'on another dividing line'):'free';
+    el.innerHTML=`<b>Dividing line ${k+1}</b> <span class="mut">${fmtLen(S,dist(d.a,d.b)*s)} drawn · ends: ${st(d.a)}, ${st(d.b)}</span>
+    <div class="row"><label>Move sideways</label><input type="number" id="dOff" step="any" value="0"><span>${U}</span><button class="btn sm" id="dGo">Move</button></div>
+    <div class="mut">Positive/negative values shift the line to either side; its ends follow the boundary.</div>
+    <div class="row"><button class="btn sm dng" id="dDel">Delete dividing line</button></div>`;
+    $('dGo').onclick=()=>{const v=parseFloat($('dOff').value);if(v&&!isNaN(v))moveDivBy(sel.id,v*LEN[S.lenUnit].f);};
+    $('dDel').onclick=()=>deleteDiv(sel.id);
+  }else if(sel.type==='parcel'&&C.parcels[sel.i]){
+    const p=C.parcels[sel.i];
+    el.innerHTML=`<b>${esc(S.names[sel.i]||'Parcel '+(sel.i+1))}</b> <span class="mut">${DISP?DISP.strs[sel.i]:''} · perimeter ${fmtLen(S,p.perimM)}</span><div class="mut">Details are listed under “Plot &amp; parcels”.</div>`;
+  }else{sel=null;el.innerHTML='<div class="mut">Nothing selected.</div>';}
+}
+function renderSummary(){
+  const el=$('summary');
+  if(!C.plot){el.innerHTML='<div class="mut">'+(S.pts.length?'Close the boundary to see measurements. Points so far: '+S.pts.length:'Draw a boundary to begin.')+'</div>';return;}
+  let h='';
+  C.errors.forEach(m=>h+=`<div class="msg e">${esc(m)}</div>`);
+  if(DISP){
+    h+=`<div class="kv"><span>Original area</span><b>${DISP.total}</b><span>Original perimeter</span><b>${fmtLen(S,C.plot.perimM)}</b><span>Parcels</span><b>${C.parcels.length}</b>`;
+    if(C.parcels.length>1){
+      h+=`<span>Sum of parcel areas</span><b>${DISP.sum}</b><span>Exact difference</span><b>${C.check.diff.toExponential(2)} m²</b>`;
+    }
+    h+='</div>';
+    if(C.parcels.length>1)h+=`<div style="margin-top:6px"><span class="pill ${C.check.ok?'ok':'bad'}">${C.check.ok?'✓ Parcel areas match the original area':'✗ Areas do not match'}</span></div><div class="mut" style="margin-top:4px">Displayed areas are rounded so they add up exactly to the displayed total.</div>`;
+  }
+  C.warnings.forEach(m=>h+=`<div class="msg w">${esc(m)}</div>`);
+  el.innerHTML=h;
+}
+function polyTable(st){
+  let h='<table><tr><th>Corner</th><th>Interior</th><th>Exterior</th><th>Side →</th></tr>';
+  st.poly.forEach((p,i)=>{h+=`<tr><td>${st.isPlot?cornerName(i):i+1}</td><td>${fmtAng(st.angles[i].interior)}</td><td>${fmtAng(st.angles[i].exterior)}</td><td>${fmtLen(S,st.edges[i].lenM)}</td></tr>`;});
+  return h+'</table>';
+}
+function renderParcels(){
+  const el=$('parcels');
+  if(!C.plot||C.errors.length){el.innerHTML='<div class="mut">Measurements appear here once a valid plot is drawn.</div>';return;}
+  const plot=Object.assign({},C.plot,{poly:S.pts,isPlot:true});
+  let h=`<details class="card" ${C.parcels.length<=1?'open':''}><summary><span class="sw" style="background:#fff"></span><b>Original plot</b><span class="ar">${DISP.total}</span></summary><div class="body"><div class="mut">Perimeter ${fmtLen(S,C.plot.perimM)} · ${S.pts.length} corners</div>${polyTable(plot)}</div></details>`;
+  if(C.parcels.length>1||(C.parcels.length===1&&S.divs.length)){
+    C.parcels.forEach((p,i)=>{
+      const nm=S.names[i]||'Parcel '+(i+1);
+      h+=`<details class="card ${sel&&sel.type==='parcel'&&sel.i===i?'sel':''}" data-i="${i}"><summary><span class="sw" style="background:${parcelColor(i,.7)}"></span><input class="nm" data-i="${i}" value="${esc(nm)}" aria-label="Parcel name"><span class="ar">${DISP.strs[i]}</span></summary><div class="body"><div class="mut">Perimeter ${fmtLen(S,p.perimM)} · ${p.poly.length} corners</div>${polyTable(p)}</div></details>`;
+    });
+  }
+  el.innerHTML=h;
+  el.querySelectorAll('input.nm').forEach(inp=>{
+    inp.onclick=e=>e.stopPropagation();inp.onkeydown=e=>{e.stopPropagation();if(e.key===' ')e.stopPropagation();};
+    inp.onchange=()=>{const i=+inp.dataset.i;beginChange();S.names[i]=inp.value.trim()||('Parcel '+(i+1));changed();};
+  });
+  el.querySelectorAll('details[data-i]').forEach(dt=>{dt.addEventListener('toggle',()=>{if(dt.open){sel={type:'parcel',i:+dt.dataset.i};renderSelPanel();render();}});});
+}
+
+// ---------- manual angle for an existing corner ----------
+function setCornerAngle(i,deg){
+  if(hasLocks()){
+    const n=S.pts.length,cons=lockCons(-1,i);cons.push({t:'a',i,v:deg});
+    if(S.locks.sides[i]===undefined)cons.push({t:'s',i,v:dist(S.pts[i],S.pts[(i+1)%n])});
+    const r=solveWithLocks(cons,[[i,(i-1+n)%n],[i]]);
+    if(!r){toast(LOCK_FAIL);renderSelPanel();return;}
+    beginChange();if(S.locks.angles[i]!==undefined)S.locks.angles[i]=deg;S.pts=r.pts;updateAtt();changed();
+    if(r.relaxed)toast('Other corners were adjusted to keep your locked values.');
+    return;
+  }
+  const n=S.pts.length,c=S.pts[i],j=(i+1)%n,nx=S.pts[j];
+  const cur=cornerAngles(S.pts)[i].interior,d=(deg-cur)*Math.PI/180;
+  if(Math.abs(d)<1e-12)return;
+  const phi=signedArea(S.pts)>=0?-d:d,vx=nx.x-c.x,vy=nx.y-c.y;
+  const np=S.pts.map(p=>({x:p.x,y:p.y}));
+  np[j]={x:c.x+vx*Math.cos(phi)-vy*Math.sin(phi),y:c.y+vx*Math.sin(phi)+vy*Math.cos(phi)};
+  if(!isSimple(np)||Math.abs(cornerAngles(np)[i].interior-deg)>1e-6){toast('That angle would make the boundary cross itself.');renderSelPanel();return;}
+  beginChange();S.pts=np;updateAtt();changed();
+}
+
+// ---------- build a plot from typed sides & angles ----------
+const PI_={n:4,lens:[10,10,10],angs:[90,90]};
+function polyFromInput(lens,angs){
+  const n=lens.length+1,r={ok:false,err:'',V:null};
+  if(lens.some(v=>!(v>0))){r.err='Enter every side length as a number greater than zero.';return r;}
+  if(angs.some(v=>!(v>0&&v<360))){r.err='Each angle must be between 0° and 360°.';return r;}
+  let h=0,x=0,y=0;const V=[{x:0,y:0}];
+  for(let k=0;k<n-1;k++){
+    if(k>=1)h+=(180-angs[k-1])*Math.PI/180;
+    x+=lens[k]*Math.cos(h);y+=lens[k]*Math.sin(h);V.push({x,y});
+  }
+  r.V=V;
+  const diag=bboxDiag(V);
+  if(dist(V[n-1],V[0])<1e-9*Math.max(1,diag)){r.err='The last corner lands exactly on the first corner, so the closing side would have zero length.';return r;}
+  if(!isSimple(V)){r.err='These sides and angles make a shape that crosses itself. Check the angles – together with the two calculated ones they must add up to '+((n-2)*180)+'°.';return r;}
+  if(signedArea(V)<0){r.err='These angles cannot all be interior angles of one closed plot (they point outward). Check that they add up sensibly – all '+n+' interior angles must total '+((n-2)*180)+'°.';return r;}
+  r.ok=true;r.n=n;r.ang=cornerAngles(V);r.closing=dist(V[n-1],V[0]);r.area=Math.abs(signedArea(V));r.perim=perimeterOf(V);
+  return r;
+}
+function polyRead(){
+  const n=PI_.n;
+  return {lens:PI_.lens.slice(0,n-1).map(v=>+v),angs:PI_.angs.slice(0,n-2).map(v=>+v)};
+}
+function polyBuildRows(){
+  const n=PI_.n,U=LEN[S.lenUnit].l;let h='';
+  while(PI_.lens.length<n-1)PI_.lens.push(PI_.lens[PI_.lens.length-1]||10);
+  while(PI_.angs.length<n-2)PI_.angs.push(90);
+  for(let k=1;k<=n-1;k++){
+    if(k>=2)h+=`<div class="row"><label style="min-width:105px">∠ Corner ${nameOf(k-1,S.opts.nameStyle)}</label><input type="number" step="any" min="0.01" max="359.99" data-a="${k-2}" value="${PI_.angs[k-2]}"><span>°</span></div>`;
+    h+=`<div class="row"><label style="min-width:105px">Side ${sideNameN(k-1,n)}</label><input type="number" step="any" min="0" data-l="${k-1}" value="${PI_.lens[k-1]}"><span>${U}</span></div>`;
+  }
+  h+=`<div class="mut">Calculated: side ${sideNameN(n-1,n)} and the angles at corners ${nameOf(n-1,S.opts.nameStyle)} and ${nameOf(0,S.opts.nameStyle)}.</div>`;
+  $('pRows').innerHTML=h;
+  $('pRows').querySelectorAll('input').forEach(inp=>inp.oninput=()=>{
+    const v=parseFloat(inp.value);
+    if(inp.dataset.l!==undefined)PI_.lens[+inp.dataset.l]=isNaN(v)?0:v;else PI_.angs[+inp.dataset.a]=isNaN(v)?0:v;
+    polyUpdate();
+  });
+  polyUpdate();
+}
+function polyUpdate(){
+  const {lens,angs}=polyRead(),r=polyFromInput(lens,angs),U=LEN[S.lenUnit],cv2=$('pCv'),c=cv2.getContext('2d'),W=cv2.width,H=cv2.height;
+  $('pU').textContent='Lengths in '+U.l;
+  c.fillStyle='#fff';c.fillRect(0,0,W,H);
+  const V=r.V;
+  if(V&&V.length>1){
+    const b=bboxOf(V),m=34,z=Math.min((W-2*m)/Math.max(b.w,1e-9),(H-2*m)/Math.max(b.h,1e-9)),ox=(W-b.w*z)/2-b.x0*z,oy=(H-b.h*z)/2-b.y0*z;
+    const T=p=>({x:p.x*z+ox,y:p.y*z+oy});
+    c.beginPath();V.forEach((p,i)=>{const q=T(p);i?c.lineTo(q.x,q.y):c.moveTo(q.x,q.y);});
+    if(r.ok){c.closePath();c.fillStyle='rgba(31,111,74,.18)';c.fill();}
+    c.strokeStyle=r.ok?'#14532d':'#dc2626';c.lineWidth=2.2;c.stroke();
+    if(!r.ok){const a=T(V[V.length-1]),f=T(V[0]);c.setLineDash([5,4]);c.beginPath();c.moveTo(a.x,a.y);c.lineTo(f.x,f.y);c.strokeStyle='#dc2626';c.lineWidth=1.5;c.stroke();c.setLineDash([]);}
+    V.forEach((p,i)=>{const q=T(p);c.beginPath();c.arc(q.x,q.y,3.5,0,7);c.fillStyle='#fff';c.fill();c.strokeStyle='#14532d';c.lineWidth=1.6;c.stroke();
+      // label sits away from the shape centre
+      const cx=T({x:b.x0+b.w/2,y:b.y0+b.h/2});let dx=q.x-cx.x,dy=q.y-cx.y;const L=Math.hypot(dx,dy)||1;
+      label(c,nameOf(i,S.opts.nameStyle),q.x+dx/L*13,q.y+dy/L*13,0,'#1d4ed8','700 12px system-ui,sans-serif');});
+  }
+  const d=S.decimals,fm=v=>fmtNum(v,d)+' '+U.l;
+  if(r.ok){
+    const aM2=r.area*U.f*U.f,F=formatAreas(S,[aM2],aM2),n=r.n;
+    $('pRes').innerHTML=`<div class="kv"><span>Closing side ${sideNameN(n-1,n)}</span><b>${fm(r.closing)}</b><span>Angle at corner ${nameOf(n-1,S.opts.nameStyle)}</span><b>${fmtAng(r.ang[n-1].interior)}</b><span>Angle at corner ${nameOf(0,S.opts.nameStyle)}</span><b>${fmtAng(r.ang[0].interior)}</b><span>Perimeter</span><b>${fm(r.perim)}</b><span>Area</span><b>${F.strs[0]}</b></div><div style="margin-top:6px"><span class="pill ok">✓ Valid closed plot</span></div>`;
+  }else $('pRes').innerHTML=`<div class="msg e">${esc(r.err)}</div>`;
+  $('pOk').disabled=!r.ok;
+}
+function polyLoadCurrent(){
+  if(!S.closed||S.pts.length<3){toast('Draw and close a plot first, then you can edit it here.');return false;}
+  const n=S.pts.length;
+  if(n>40){toast('The sides & angles editor handles up to 40 corners.');return false;}
+  if(signedArea(S.pts)<0){toast('This plot is stored in an unsupported direction – redraw it or use a rectangle/boundary tool first.');return false;}
+  const an=cornerAngles(S.pts),f=LEN[S.lenUnit].f,s=scaleM(),r8=v=>+v.toFixed(8);
+  PI_.n=n;PI_.lens=[];PI_.angs=[];
+  for(let k=0;k<n-1;k++)PI_.lens.push(r8(dist(S.pts[k],S.pts[k+1])*s/f));
+  for(let k=1;k<=n-2;k++)PI_.angs.push(r8(an[k].interior));
+  $('pN').value=n;$('pUpd').style.display='';polyBuildRows();
+  return true;
+}
+function polyUpdateCurrent(){
+  if(!S.closed){toast('There is no plot to update – use “Create new plot”.');return;}
+  const {lens,angs}=polyRead(),r=polyFromInput(lens,angs);
+  if(!r.ok){toast(r.err);return;}
+  const f=LEN[S.lenUnit].f,s=scaleM(),n=r.n,old=S.pts;
+  const sameN=n===old.length;
+  if(!sameN&&(S.divs.length||lockCount())&&!confirm('The number of sides changed, so dividing lines and locks will be removed. Continue? (You can undo.)'))return;
+  // keep the plot where it is: first corner stays put and side 1 keeps its direction
+  const V=r.V.map(p=>({x:p.x*f/s,y:p.y*f/s}));
+  const th=Math.atan2(old[1].y-old[0].y,old[1].x-old[0].x)-Math.atan2(V[1].y-V[0].y,V[1].x-V[0].x),co=Math.cos(th),si=Math.sin(th);
+  const pts=V.map(p=>{const dx=p.x-V[0].x,dy=p.y-V[0].y;return {x:old[0].x+dx*co-dy*si,y:old[0].y+dx*si+dy*co};});
+  beginChange();
+  if(sameN){
+    S.pts=pts;updateAtt();
+    const an=cornerAngles(S.pts);
+    Object.keys(S.locks.sides).forEach(k=>{S.locks.sides[k]=dist(S.pts[+k],S.pts[(+k+1)%n]);});
+    Object.keys(S.locks.angles).forEach(k=>{S.locks.angles[k]=an[+k].interior;});
+  }else{S.pts=pts;S.divs=[];S.names=[];S.locks={sides:{},angles:{}};}
+  sel=null;changed();$('dPoly').close();fitView();render();setTool('select');
+  toast('Plot updated from your sides and angles.');
+}
+function initPoly(){
+  $('bPoly').onclick=()=>{polyBuildRows();$('pUpd').style.display=S.closed?'':'none';$('dPoly').showModal();};
+  $('pN').onchange=()=>{let v=Math.round(parseFloat($('pN').value));if(!(v>=3))v=3;if(v>40)v=40;$('pN').value=v;if(v===PI_.n)return;PI_.n=v;polyBuildRows();};
+  $('pReg').onclick=()=>{
+    const n=PI_.n,L=PI_.lens[0]>0?PI_.lens[0]:10;
+    PI_.lens=Array(n-1).fill(L);PI_.angs=Array(Math.max(n-2,0)).fill(+((n-2)*180/n).toFixed(10));polyBuildRows();
+  };
+  $('bPolyEdit').onclick=()=>{if(polyLoadCurrent())$('dPoly').showModal();};
+  $('pLoad').onclick=()=>polyLoadCurrent();
+  $('pUpd').onclick=polyUpdateCurrent;
+  $('pOk').onclick=()=>{
+    const {lens,angs}=polyRead(),r=polyFromInput(lens,angs);
+    if(!r.ok){toast(r.err);return;}
+    if(!confirmReplace())return;
+    const f=LEN[S.lenUnit].f,s=scaleM();
+    const pts=r.V.map(p=>({x:p.x*f/s,y:p.y*f/s}));
+    beginChange();replaceWithPlot(pts);changed();
+    $('dPoly').close();fitView();render();setTool('select');
+    toast('Plot created from your sides and angles.');
+  };
+}
+
+// ---------- settings controls ----------
+function fillSelect(id,items,val){const s=$(id);s.innerHTML=items.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');s.value=val;}
+function initControls(){
+  const lens=[['m','Metres (m)'],['cm','Centimetres (cm)'],['mm','Millimetres (mm)'],['km','Kilometres (km)'],['ft','Feet (ft)'],['in','Inches (in)'],['yd','Yards (yd)']];
+  fillSelect('uLen',lens,S.lenUnit);fillSelect('scUnit',lens,S.gridUnit);
+  fillSelect('uArea',Object.keys(AREA_LABEL).map(k=>[k,k==='m2'?'Square metres (m²)':k==='ft2'?'Square feet (ft²)':k==='yd2'?'Square yards (yd²)':k==='acre'?'Acres':k==='ha'?'Hectares (ha)':k==='in2'?'Square inches (in²)':k==='cm2'?'Square cm (cm²)':k==='bigha'?'Bigha':k==='katha'?'Katha':k==='dhur'?'Dhur':'Bigha-Katha-Dhur (combined)']),S.areaUnit);
+  $('uLen').onchange=()=>{S.lenUnit=$('uLen').value;markDirty();refresh();};
+  $('uArea').onchange=()=>{S.areaUnit=$('uArea').value;markDirty();refresh();};
+  $('uDec').onchange=()=>{S.decimals=+$('uDec').value;markDirty();refresh();};
+  $('scVal').onchange=()=>{const v=parseFloat($('scVal').value);if(!(v>0)){$('scVal').value=S.gridValue;return;}beginChange();S.gridValue=v;changed();};
+  $('scUnit').onchange=()=>{beginChange();S.gridUnit=$('scUnit').value;changed();};
+  const opt=(id,key)=>{$(id).onchange=()=>{S.opts[key]=$(id).checked;markDirty();render();};};
+  opt('oSnap','snap');opt('oGrid','grid');opt('oLen','lengths');opt('oLab','labels');opt('oExt','extend');opt('oCN','cornerNames');opt('oPar','parallel');opt('oParD','parallelDist');opt('oSN','sideNames');
+  $('oNS').onchange=()=>{S.opts.nameStyle=$('oNS').value;markDirty();refresh();};
+  $('oAng').onchange=()=>{S.opts.angles=$('oAng').value;markDirty();render();};
+  $('pname').onchange=()=>{S.name=$('pname').value.trim()||'Untitled plot';$('pname').value=S.name;markDirty();document.title='LandSplit – '+S.name;};
+  $('bBihar').onclick=()=>{$('cBigha').value=+S.bihar.bigha.toFixed(6);$('cKatha').value=+S.bihar.katha.toFixed(6);$('cDhur').value=+S.bihar.dhur.toFixed(6);$('dBihar').showModal();};
+  $('cDef').onclick=()=>{$('cBigha').value=+BIHAR_DEFAULT.bigha.toFixed(6);$('cKatha').value=+BIHAR_DEFAULT.katha.toFixed(6);$('cDhur').value=+BIHAR_DEFAULT.dhur.toFixed(6);};
+  $('cOk').onclick=()=>{
+    const b=parseFloat($('cBigha').value),k=parseFloat($('cKatha').value),d=parseFloat($('cDhur').value);
+    if(!(b>0&&k>0&&d>0)){alert('Enter positive values for all three units.');return;}
+    S.bihar={bigha:b,katha:k,dhur:d};markDirty();$('dBihar').close();refresh();
+  };
+  document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
+  $('bHelp').onclick=()=>$('dHelp').showModal();
+  $('bQuickP').onclick=()=>{
+    const bs=parseFloat($('qpB').value),sd=parseFloat($('qpS').value),an=parseFloat($('qpA').value);
+    if(!(bs>0&&sd>0)){toast('Enter a base and a side length greater than zero.');return;}
+    if(!(an>0&&an<180)){toast('Enter an angle between 0° and 180° (not 0 or 180).');return;}
+    if(!confirmReplace())return;
+    const s=scaleM(),f=LEN[S.lenUnit].f,bw=bs*f/s,sw=sd*f/s,t=an*Math.PI/180;
+    const c=toW(cv.clientWidth/2,cv.clientHeight/2),g=gridStep(view.z);
+    const x0=Math.round((c.x-bw/2)/g)*g,y0=Math.round((c.y-sw*Math.sin(t)/2)/g)*g;
+    const A={x:x0,y:y0},B={x:x0+bw,y:y0},D={x:x0+sw*Math.cos(t),y:y0+sw*Math.sin(t)},C={x:B.x+D.x-A.x,y:B.y+D.y-A.y};
+    beginChange();replaceWithPlot([A,B,C,D]);changed();fitView();render();setTool('select');
+  };
+  $('bQuick').onclick=()=>{
+    const w=parseFloat($('qW').value),h=parseFloat($('qH').value);
+    if(!(w>0&&h>0)){toast('Enter a width and a length greater than zero.');return;}
+    if(!confirmReplace())return;
+    const s=scaleM(),wd=w*LEN[S.lenUnit].f/s,hd=h*LEN[S.lenUnit].f/s;
+    const c=toW(cv.clientWidth/2,cv.clientHeight/2),g=gridStep(view.z);
+    const x0=Math.round((c.x-wd/2)/g)*g,y0=Math.round((c.y-hd/2)/g)*g;
+    beginChange();replaceWithPlot(makeRect(x0,y0,x0+wd,y0+hd));changed();fitView();render();setTool('select');
+  };
+  $('bNew').onclick=()=>{if(dirty&&!confirm('You have unsaved changes. Start a new project anyway?'))return;newProject();};
+  $('bOpen').onclick=()=>{if(dirty&&!confirm('You have unsaved changes. Open another project anyway?'))return;$('fileIn').value='';$('fileIn').click();};
+  $('fileIn').onchange=e=>{const f=e.target.files[0];if(f)readFile(f);};
+  $('bSave').onclick=()=>saveProject(false);
+  $('bSaveAs').onclick=()=>saveProject(true);
+  $('bCsv').onclick=exportCsv;
+  $('bPrint').onclick=printReport;
+  $('bRestore').onclick=()=>{try{loadProject(JSON.parse(localStorage.getItem(LS_KEY)));toast('Previous session restored.');}catch(e){toast('Could not restore it.');}$('banner').classList.remove('show');};
+  $('bDiscard').onclick=()=>{try{localStorage.removeItem(LS_KEY);}catch(e){}$('banner').classList.remove('show');};
+}
+function syncControls(){
+  $('uLen').value=S.lenUnit;$('uArea').value=S.areaUnit;$('uDec').value=String(S.decimals);
+  $('scVal').value=+(+S.gridValue).toPrecision(8);$('scUnit').value=S.gridUnit;
+  $('oSnap').checked=S.opts.snap;$('oGrid').checked=S.opts.grid;$('oLen').checked=S.opts.lengths;$('oLab').checked=S.opts.labels;$('oCN').checked=S.opts.cornerNames;$('oPar').checked=S.opts.parallel;$('oParD').checked=S.opts.parallelDist;$('oSN').checked=S.opts.sideNames;$('oNS').value=S.opts.nameStyle;$('oExt').checked=S.opts.extend;$('oAng').value=S.opts.angles;
+  $('pname').value=S.name;
+}
+
+// ---------- project files ----------
+function serialize(){
+  return {app:'LandSplit',version:1,savedAt:new Date().toISOString(),name:S.name,
+    plot:{points:S.pts.map(p=>({x:p.x,y:p.y})),closed:S.closed},
+    divisions:S.divs.map(d=>({id:d.id,a:{x:d.a.x,y:d.a.y,att:d.a.att||null},b:{x:d.b.x,y:d.b.y,att:d.b.att||null}})),
+    nextId:S.nextId,parcelNames:S.names,locks:{sides:S.locks.sides,angles:S.locks.angles},
+    scale:{gridValue:S.gridValue,gridUnit:S.gridUnit},
+    units:{length:S.lenUnit,area:S.areaUnit,decimals:S.decimals},
+    biharConversions_m2:S.bihar,options:S.opts,view:{ox:view.ox,oy:view.oy,z:view.z}};
+}
+function loadProject(o){
+  if(!o||o.app!=='LandSplit'||!o.plot||!Array.isArray(o.plot.points))throw new Error('Not a LandSplit project file.');
+  const N=newState();
+  const num=v=>typeof v==='number'&&isFinite(v);
+  const pts=o.plot.points.map(p=>{if(!num(p.x)||!num(p.y))throw new Error('Project file has invalid points.');return {x:p.x,y:p.y};});
+  const divs=(o.divisions||[]).map(d=>{
+    ['a','b'].forEach(k=>{if(!d[k]||!num(d[k].x)||!num(d[k].y))throw new Error('Project file has an invalid dividing line.');});
+    return {id:d.id,a:{x:d.a.x,y:d.a.y,att:d.a.att||null},b:{x:d.b.x,y:d.b.y,att:d.b.att||null}};
+  });
+  N.name=String(o.name||'Untitled plot');N.pts=pts;N.closed=!!o.plot.closed&&pts.length>=3;N.divs=divs;
+  N.nextId=num(o.nextId)?o.nextId:(divs.reduce((m,d)=>Math.max(m,d.id||0),0)+1);
+  N.names=Array.isArray(o.parcelNames)?o.parcelNames:[];
+  if(o.locks){['sides','angles'].forEach(k=>{const src=o.locks[k]||{};Object.keys(src).forEach(i=>{if(num(src[i])&&+i>=0&&+i<pts.length)N.locks[k][i]=src[i];});});}
+  if(o.scale&&num(o.scale.gridValue)&&o.scale.gridValue>0&&LEN[o.scale.gridUnit]){N.gridValue=o.scale.gridValue;N.gridUnit=o.scale.gridUnit;}
+  if(o.units){if(LEN[o.units.length])N.lenUnit=o.units.length;if(AREA_LABEL[o.units.area])N.areaUnit=o.units.area;if([0,1,2,3,4].includes(o.units.decimals))N.decimals=o.units.decimals;}
+  const b=o.biharConversions_m2;if(b&&num(b.bigha)&&num(b.katha)&&num(b.dhur)&&b.bigha>0&&b.katha>0&&b.dhur>0)N.bihar={bigha:b.bigha,katha:b.katha,dhur:b.dhur};
+  if(o.options)Object.assign(N.opts,o.options);
+  S=N;sel=null;divDraft=null;undoStack=[];redoStack=[];
+  if(o.view&&num(o.view.z)&&num(o.view.ox)&&num(o.view.oy)){view={ox:o.view.ox,oy:o.view.oy,z:o.view.z};}else fitView();
+  syncControls();dirty=false;$('dirty').style.display='none';lastFile=null;
+  refresh();
+}
+function newProject(){S=newState();sel=null;divDraft=null;undoStack=[];redoStack=[];lastFile=null;dirty=false;$('dirty').style.display='none';view={ox:50,oy:50,z:24};syncControls();setTool('select');refresh();}
+function readFile(f){
+  const r=new FileReader();
+  r.onload=()=>{try{loadProject(JSON.parse(r.result));fitView();render();toast('Opened “'+S.name+'”.');}catch(e){alert('Could not open this file: '+e.message);}};
+  r.onerror=()=>alert('Could not read the file.');
+  r.readAsText(f);
+}
+function download(name,text,mime){
+  const blob=new Blob([text],{type:mime}),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
+}
+function safeName(n){return (n||'land-plot').replace(/[\\/:*?"<>|]+/g,'-').trim()||'land-plot';}
+function saveProject(asNew){
+  let fname=lastFile;
+  if(asNew||!fname){
+    const nm=prompt(asNew?'Save a separate copy as (project name):':'Project name for the saved file:',S.name);
+    if(nm===null)return;
+    S.name=nm.trim()||S.name;syncControls();
+    fname=safeName(S.name)+'.landsplit.json';
+  }else if(!confirm('Save again as “'+fname+'”?\n\nYour browser downloads a new file. If a file with this name already exists in your download folder it may be replaced or renamed, depending on your browser settings. Use “Save As” for a separate copy.'))return;
+  download(fname,JSON.stringify(serialize(),null,2),'application/json');
+  lastFile=fname;dirty=false;$('dirty').style.display='none';
+  toast('Project file downloaded: '+fname);
+}
+
+// ---------- CSV / report ----------
+function exportCsv(){
+  if(!C.plot||C.errors.length){toast('Draw a valid, closed plot first.');return;}
+  const s=C.s,U=LEN[S.lenUnit],q=v=>{v=String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const rows=[['Section','Name','Item','Corner / Side','Length ('+U.l+')','Interior angle (deg)','Exterior angle (deg)','Area ('+(S.areaUnit==='bkd'?'bigha-katha-dhur':AREA_LABEL[S.areaUnit])+')','Area (m2)','Perimeter ('+U.l+')']];
+  const d=S.decimals,L=m=>(m/U.f).toFixed(Math.max(d,2));
+  const add=(sec,name,st,areaStr)=>{
+    rows.push([sec,name,'Summary','','','','',areaStr,st.areaM2.toFixed(6),L(st.perimM)]);
+    st.poly.forEach((p,i)=>{const n=st.poly.length;rows.push([sec,name,'Side/corner',(st.isPlot?sideName(i):(i+1)+' → '+((i+1)%n+1)),L(st.edges[i].lenM),st.angles[i].interior.toFixed(4),st.angles[i].exterior.toFixed(4),'','','']);});
+  };
+  add('Original plot','Original plot',Object.assign({},C.plot,{poly:S.pts,isPlot:true}),DISP.total);
+  if(C.parcels.length>1||S.divs.length)C.parcels.forEach((p,i)=>add('Parcel',S.names[i]||('Parcel '+(i+1)),p,DISP.strs[i]));
+  if(C.parcels.length>1)rows.push(['Check','Sum of parcels','Summary','','','','',DISP.sum,C.check.sum.toFixed(6),'']);
+  rows.push([]);rows.push(['Note','Estimates only – not a substitute for an official land survey or legal boundary verification.']);
+  download(safeName(S.name)+'-measurements.csv','\ufeff'+rows.map(r=>r.map(q).join(',')).join('\r\n'),'text/csv;charset=utf-8');
+}
+function printReport(){
+  if(!C.plot||C.errors.length){toast('Draw a valid, closed plot first.');return;}
+  const off=document.createElement('canvas'),W=1400,H=900;off.width=W;off.height=H;
+  const c=off.getContext('2d'),v={ox:0,oy:0,z:1};fitView(W,H,v);
+  const saveSel=sel,saveDrag=dragInvalid;sel=null;paint(c,W,H,v,false);sel=saveSel;dragInvalid=saveDrag;
+  const img=off.toDataURL('image/png');
+  const tbl=(st)=>{let h='<table><tr><th>Corner</th><th>Interior angle</th><th>Exterior angle</th><th>Side length →</th></tr>';st.poly.forEach((p,i)=>{h+=`<tr><td>${st.isPlot?cornerName(i):i+1}</td><td>${fmtAng(st.angles[i].interior)}</td><td>${fmtAng(st.angles[i].exterior)}</td><td>${fmtLen(S,st.edges[i].lenM)}</td></tr>`;});return h+'</table>';};
+  let h=`<h1>${esc(S.name)}</h1><div>Land measurement report · ${new Date().toLocaleString()} · Scale: 1 grid square = ${S.gridValue} ${S.gridUnit}</div>
+  <h2>Drawing</h2><img src="${img}" alt="Land drawing">
+  <h2>Project summary</h2><table><tr><th>Item</th><th>Value</th></tr>
+  <tr><td>Original plot area</td><td>${DISP.total}</td></tr><tr><td>Original perimeter</td><td>${fmtLen(S,C.plot.perimM)}</td></tr><tr><td>Number of parcels</td><td>${C.parcels.length}</td></tr>`;
+  if(C.parcels.length>1)h+=`<tr><td>Sum of parcel areas</td><td>${DISP.sum} (${C.check.ok?'matches original':'MISMATCH'})</td></tr>`;
+  h+='</table>';
+  if(C.parcels.length>1||S.divs.length){
+    h+='<h2>Parcel areas</h2><table><tr><th>Parcel</th><th>Area</th><th>Perimeter</th></tr>';
+    C.parcels.forEach((p,i)=>{h+=`<tr><td>${esc(S.names[i]||'Parcel '+(i+1))}</td><td>${DISP.strs[i]}</td><td>${fmtLen(S,p.perimM)}</td></tr>`;});
+    h+=`<tr><td><b>Total</b></td><td><b>${DISP.sum}</b></td><td></td></tr></table>`;
+  }
+  h+='<h2>Original plot – sides and angles</h2><div class="pb">'+tbl(Object.assign({},C.plot,{poly:S.pts,isPlot:true}))+'</div>';
+  if(C.parcels.length>1)C.parcels.forEach((p,i)=>{h+=`<div class="pb"><h2>${esc(S.names[i]||'Parcel '+(i+1))} – ${DISP.strs[i]}</h2><div>Perimeter ${fmtLen(S,p.perimM)}</div>${tbl(p)}</div>`;});
+  h+='<div class="dsc"><b>Disclaimer:</b> This report contains estimates produced by LandSplit. It is not a substitute for an official land survey or legal boundary verification.</div>';
+  $('report').innerHTML=h;
+  setTimeout(()=>window.print(),150);
+}
+
+// ---------- init ----------
+window.addEventListener('resize',()=>render());
+window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
+window.addEventListener('dragover',e=>e.preventDefault());
+window.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f&&/\.json$/i.test(f.name)){if(dirty&&!confirm('You have unsaved changes. Open this file anyway?'))return;readFile(f);}});
+new ResizeObserver(()=>render()).observe($('cvwrap'));
+buildTools();initControls();initPoly();setTool('select');
+try{
+  const raw=localStorage.getItem(LS_KEY);
+  if(raw){const o=JSON.parse(raw);if(o&&o.plot&&(o.plot.points.length||(o.divisions||[]).length)){$('bannerTxt').textContent='A browser-saved copy of “'+(o.name||'Untitled plot')+'” from '+new Date(o.savedAt).toLocaleString()+' was found (separate from downloaded project files).';$('banner').classList.add('show');}}
+}catch(e){}
+refresh();
+</script>
+</body>
+</html>
